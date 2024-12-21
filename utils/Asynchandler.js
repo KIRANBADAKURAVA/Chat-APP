@@ -1,11 +1,14 @@
 
-const Asynchandler= async  (func)=> {
+const Asynchandler=   (func)=> {
 
-    Promise.resolve((func(req, res, next))).catch((err)=>{
-        console.log(err);
-        next(err)
-    })
+    return (req, res, next) => {
+        Promise.resolve(func(req, res, next)).catch((error) => {
+            console.log(error);
+            next(error); 
+        });
+    };
+    }
     
-}
+
 
 export {Asynchandler}
