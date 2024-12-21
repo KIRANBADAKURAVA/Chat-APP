@@ -12,20 +12,25 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
+
     },
-    chats:[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Chat',
-        }
-    ]
-    });
+    profilePicture: {
+        type: String,
+        default: "https://www.google.com/imgres?q=profile%20pic%20logo%20url&imgurl=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fthumbnails%2F005%2F544%2F708%2Fsmall_2x%2Fprofile-icon-design-free-vector.jpg&imgrefurl=https%3A%2F%2Fwww.vecteezy.com%2Ffree-vector%2Fprofile-logo&docid=BJa5oBBmsPAcoM&tbnid=PjKoQco_oD_9cM&vet=12ahUKEwjqmtrrgbmKAxVkV2wGHX7YJX0QM3oFCIMBEAA..i&w=400&h=400&hcb=2&ved=2ahUKEwjqmtrrgbmKAxVkV2wGHX7YJX0QM3oFCIMBEAA",
+    },
+    refreshToken: {
+        type: String,
+    },
+},
+{
+    timestamps: true,
+});
 
     UserSchema.pre('save', function (next) {
         if (!this.isModified('password')) {
             return next();
         }
-        this.password = bcrypt.hashSync(this.password, 10);
+        this.password = bcrypt.hash(this.password, 10);
             next();
         });
 
