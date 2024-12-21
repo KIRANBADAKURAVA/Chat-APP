@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { UserRegistration } from "../controllers/User.controller.js";
+import { UserLogin, UserRegistration } from "../controllers/User.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 
@@ -13,6 +13,8 @@ UserRouter.route('/register').post(
         }
         ]),
     UserRegistration)
+
+UserRouter.route('/login').post( UserLogin)
 
 
 export default UserRouter
