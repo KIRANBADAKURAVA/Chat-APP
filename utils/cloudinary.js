@@ -37,11 +37,11 @@ dotenv.config();
         const deleteResult = await cloudinary.uploader
         .destroy(
             cloudinaryfilepath, {
-                resource_type:'auto',
+                resource_type:'raw',
             }  
         )
        
-        return uploadResult
+        return deleteResult
     } catch (error) {
     
         throw error

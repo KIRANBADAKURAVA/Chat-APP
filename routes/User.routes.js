@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { UserLogin, UserRegistration } from "../controllers/User.controller.js";
+import { UserLogin, UserLogout, UserRegistration, UpdateUserProfile,currentUserProfile, updatePassword } from "../controllers/User.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import verifyToken from "../middlewares/auth.middleware.js";
 
 
 const UserRouter= Router()
@@ -15,6 +16,8 @@ UserRouter.route('/register').post(
     UserRegistration)
 
 UserRouter.route('/login').post( UserLogin)
-
-
+UserRouter.route('/logout').post(verifyToken,UserLogout)
+UserRouter.route('/updateProfile').put(verifyToken, upload.single('profilePicture'), UpdateUserProfile)
+UserRouter.route('/getuser').get(verifyToken, currentUserProfile)
+UserRouter.route('/updatePassword').put(verifyToken, updatePassword)
 export default UserRouter
