@@ -61,4 +61,104 @@ const getAllChats = Asynchandler(async (req, res) => {
   });
   
 
-export { getAllChats }
+  // create a group chat
+
+  const createGroupChat = Asynchandler(async (req, res) => {
+    const AdminId = req.user._id;
+    const { groupName } = req.body;
+    const group = Chat.create({
+      participants: [AdminId],
+      isGroupChat: true,
+      groupName: groupName,
+    });
+
+    if (!group) throw new ApiError(500, 'Group chat not created');
+
+    return res.status(201).json(new ApiResponse(201, group, 'Group chat created successfully'));
+    }    
+    );
+// add a participant to a group chat
+
+const addParticipant = Asynchandler(async (req, res) => {
+
+    const chatId = req.params.chatId;
+    const {username} = req.body;
+
+    const chat = await Chat.findById(chatId);
+    if(!chat) throw new ApiError(404, 'Chat not found');
+
+    const user= await User.findOne({username: username});
+
+    if(!user) throw new ApiError(404, 'User not found');
+    const userId = user._id;
+    
+    if(chat.participants.includes(userId)) throw new ApiError(400, 'User already in chat');
+    chat.participants.push(userId);
+    await chat.save();
+    return res.status(200).json(new ApiResponse(200, chat, 'Participant added successfully'));
+});
+
+
+// get all messages in a chat
+const getAllMessages = Asynchandler(async (req, res) => {
+    const {chatId} = req.params;
+
+    const chat = await Chat.findById(chatId);
+    if(!chat) throw new ApiError(404, 'Chat not found');
+    if(!chat.participants.includes(req.user._id) ) throw new ApiError(403, 'You are not a participant in this chat');
+
+    const AllMessages= await Chat.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(chatId),
+            },
+        },
+        {
+            $lookup: {
+                from: 'messages',
+                localField: 'messages',
+                foreignField: '_id',
+                as: 'messages',
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'sender',
+                            foreignField: '_id',
+                            as: 'sender',
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        profilePicture: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'reciever',
+                            foreignField: '_id',
+                            as: 'reciever',
+                            pipeline: [
+                                {
+                                    $project: {
+                                        username: 1,
+                                        profilePicture: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    }
+                ],
+            },
+        },
+    ]);
+
+    return res.status(200).json(new ApiResponse(200, AllMessages, 'All messages fetched successfully'));
+    
+})
+
+export { getAllChats, createGroupChat , addParticipant, getAllMessages };

@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import Chat from "../model/chat.model.js";
 import User from "../model/user.model.js"; // Assuming User model is defined
 
+// create a new individual message
 const AddMessage = Asynchandler(async (req, res) => {
   try {
     const sender = req.user._id;
@@ -19,8 +20,9 @@ const AddMessage = Asynchandler(async (req, res) => {
 
     // Create or find chat
     let chat = await Chat.findOne({
-      participants: { $all: [sender, receiverId] },
+      participants: { $all: [sender, [receiverId]] },
       isGroupChat: false,
+      
     });
 
     if (!chat) {
@@ -33,6 +35,7 @@ const AddMessage = Asynchandler(async (req, res) => {
       chat.latestMessage = content;
       await chat.save();
     }
+   
 
     if (!chat) throw new ApiError(500, "Chat not created");
 
@@ -40,7 +43,7 @@ const AddMessage = Asynchandler(async (req, res) => {
     const newMessage = await Message.create({
       chat: chat._id,
       sender,
-      receiver: receiverId,
+      reciever: [receiverId],
       content,
     });
 
@@ -59,7 +62,8 @@ const AddMessage = Asynchandler(async (req, res) => {
         recipientUser.chats.push(chat._id); 
         await recipientUser.save();
         }
-
+         chat.messages.push(newMessage._id);
+        await chat.save();
     return res.status(201).json(
       new ApiResponse(201, {
         message: newMessage,
@@ -71,4 +75,36 @@ const AddMessage = Asynchandler(async (req, res) => {
   }
 });
 
-export { AddMessage };
+// send a message to a group chat
+
+const AddGroupMessage = Asynchandler(async (req, res) => {  
+  const chatId = req.params.chatId;
+  const sender = req.user._id;
+  const { content } = req.body;
+
+  const groupChat = await Chat.findById(chatId );
+  if (!groupChat) throw new ApiError(404, "Group chat not found");
+  groupChat.latestMessage = content;
+  await groupChat.save();
+  const recievers = groupChat.participants.filter((participant) => participant.toString() !== sender.toString());
+  const newMessage = await Message.create({
+    chat: chatId,
+    sender,
+    reciever: recievers,
+    content,
+  });
+
+  if (!newMessage) throw new ApiError(500, "Message not sent");
+
+  groupChat.messages.push(newMessage._id);
+  await groupChat.save();
+
+  return res.status(201).json(  
+    new ApiResponse(201, newMessage, "Message sent successfully")
+  );
+} 
+);
+
+
+
+export { AddMessage, AddGroupMessage };
