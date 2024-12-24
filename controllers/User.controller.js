@@ -214,6 +214,18 @@ const updatePassword= Asynchandler(async(req, res)=>{
 })
 
 
+// get all available users
+
+const getAllUsers= Asynchandler(async(req, res)=>{
+    const users= await User.find().select('-password -refreshtoken')
+
+    if(!users) throw new ApiError(500, 'something went wrong while fetching users')
+
+    return res.status(200).json(new ApiResponse(200, users, 'Users fetched successfully' ))
+
+})
+
+
 
 
 
@@ -224,7 +236,8 @@ export {
     UserLogout,
     UpdateUserProfile,
     currentUserProfile,
-    updatePassword
+    updatePassword,
+    getAllUsers
 }
 
 

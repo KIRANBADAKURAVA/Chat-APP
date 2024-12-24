@@ -77,6 +77,20 @@ const getAllChats = Asynchandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(201, group, 'Group chat created successfully'));
     }    
     );
+
+//update group name
+const updateGroupName = Asynchandler(async (req, res) => {
+    const chatId = req.params.chatId;
+    const { groupName } = req.body;
+    const chat = await Chat.findById(chatId);
+    if (!chat) throw new ApiError(404, 'Chat not found');
+    if (!chat.participants.includes(req.user._id)) throw new ApiError(403, 'You are not a participant in this chat');
+    chat.groupChatName = groupName;
+    await chat.save();
+    return res.status(200).json(new ApiResponse(200, chat, 'Group name updated successfully'));
+  });
+  
+  
 // add a participant to a group chat
 
 const addParticipant = Asynchandler(async (req, res) => {
@@ -97,6 +111,24 @@ const addParticipant = Asynchandler(async (req, res) => {
     await chat.save();
     return res.status(200).json(new ApiResponse(200, chat, 'Participant added successfully'));
 });
+
+// remove a participant from a group chat
+const removeParticipant = Asynchandler(async (req, res) => {
+    const chatId = req.params.chatId;
+    const {username} = req.body;
+    const chat = await Chat.findById(chatId);
+    if(!chat) throw new ApiError(404, 'Chat not found');
+    const user = await User .findOne({
+        username: username,
+    });
+    if(!user) throw new ApiError(404, 'User not found');
+    const userId = user._id;
+    if(!chat.participants.includes(userId)) throw new ApiError(400, 'User not in chat');
+    chat.participants = chat.participants.filter((participant) => participant.toString() !== userId.toString());
+    await chat.save();
+    return res.status(200).json(new ApiResponse(200, chat, 'Participant removed successfully'));
+}
+);
 
 
 // get all messages in a chat
@@ -161,4 +193,21 @@ const getAllMessages = Asynchandler(async (req, res) => {
     
 })
 
-export { getAllChats, createGroupChat , addParticipant, getAllMessages };
+
+// delete a chat
+const deleteChat = Asynchandler(async (req, res) => {
+    const chatId = req.params.chatId;
+    const chat = await Chat.findByIdAndDelete(chatId);
+    if(!chat) throw new ApiError(404, 'Chat not found');
+    if(!chat.participants.includes(req.user._id)) throw new ApiError(403, 'You are not a participant in this chat');
+    
+    return res.status(200).json(new ApiResponse(200, {}, 'Chat deleted successfully'));
+});
+export { getAllChats, 
+        createGroupChat, 
+        addParticipant, 
+        getAllMessages,
+        deleteChat,
+        updateGroupName,
+        removeParticipant
+      };
