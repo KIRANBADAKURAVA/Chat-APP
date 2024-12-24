@@ -31,9 +31,14 @@ app.use(express.static('public'))
 app.use(cookieParser())
 
 import UserRouter from './routes/User.routes.js'
+import MessageRouter from './routes/message.routes.js';
+import ChatRouter from './routes/Chats.routes.js';
+
 
 
 app.use('/api/v1/user', UserRouter)
+app.use('/api/v1/message', MessageRouter)
+app.use('/api/v1/chat', ChatRouter)
 
 
 

@@ -21,6 +21,16 @@ const UserSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
     },
+    chats: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Chat',
+        }
+    ],
+    isOnline: { 
+        type: Boolean,
+        default: false,
+    },
 },
 {
     timestamps: true,

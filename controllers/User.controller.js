@@ -1,5 +1,3 @@
-
-
 import { Asynchandler } from "../utils/Asynchandler.js";
 import {ApiError} from '../utils/ApiError.js'
 import User from '../model/user.model.js'
@@ -181,7 +179,7 @@ const UpdateUserProfile= Asynchandler(async(req, res)=>{
 })
 
 // get user profile
-    const currentUserProfile= Asynchandler(async(req, res)=>{
+const currentUserProfile= Asynchandler(async(req, res)=>{
         const userId= req._id
        // console.log(userId)
         const   user = await    User.findById(userId).select('-password -refreshtoken')
@@ -209,11 +207,17 @@ const updatePassword= Asynchandler(async(req, res)=>{
     user.password= newPassword  
 
 
-    await user.save()
+    await user.save({validateBeforeSave: false})
 
     return res.status(200).json(new ApiResponse(200, {}, 'Password updated successfully' ))
 
 })
+
+
+
+
+
+
 export {
     UserRegistration,
     UserLogin,
