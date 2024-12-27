@@ -64,6 +64,8 @@ const AddMessage = Asynchandler(async (req, res) => {
         }
          chat.messages.push(newMessage._id);
         await chat.save();
+
+        req.app.get('io').to(recipientUser._id.toString()).emit('newMessage', newMessage);
     return res.status(201).json(
       new ApiResponse(201, {
         message: newMessage,
@@ -98,6 +100,11 @@ const AddGroupMessage = Asynchandler(async (req, res) => {
 
   groupChat.messages.push(newMessage._id);
   await groupChat.save();
+
+  recievers.forEach((reciever) => {
+    req.app.get('io').to(reciever.toString()).emit('newMessage', newMessage);
+  });
+
 
   return res.status(201).json(  
     new ApiResponse(201, newMessage, "Message sent successfully")
