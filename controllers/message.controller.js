@@ -10,9 +10,10 @@ const AddMessage = Asynchandler(async (req, res) => {
   try {
     const sender = req.user._id;
     const receiverId = req.params.userId;
+    console.log(sender);
     
     const { content } = req.body;
-    console.log(content);
+    //console.log(content);
     if(!content) throw new ApiError(400, "Message content is required");
     // Fetch recipient user
     const recipientUser = await User.findById(receiverId);

@@ -25,7 +25,7 @@ const UserRegistration= Asynchandler(async(req, res)=>{
         }
        
         const profilePictureupload= await fileupload(profilePicturepath)
-        console.log('profilePictureupload', profilePictureupload)
+        //console.log('profilePictureupload', profilePictureupload)
         
        // if(!profilePictureupload) throw new ApiError(500, 'something went wrong while uploading profile picture')
         
@@ -75,7 +75,7 @@ const UserLogin= Asynchandler(async(req, res)=>{
     if(!isPasswordCorrect) throw new ApiError(400, 'Invalid credentials')
 
         const {accesstoken, refreshtoken}=  await generateToken(username);
-        console.log('accesstoken', accesstoken)
+        //console.log('accesstoken', accesstoken)
         if(!accesstoken, !refreshtoken) throw new ApiError(500,' Something went wrong while generating tokens')
             
             const loggedUser = await User.findById(exsistingUser._id).select('-password ')

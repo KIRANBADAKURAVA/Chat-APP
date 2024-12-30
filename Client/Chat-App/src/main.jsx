@@ -4,7 +4,8 @@ import { Provider } from 'react-redux';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Store from './store/store.js';
 import App from './App.jsx';
-import {Home} from './index.jsx'
+import {Home, Login, Register, Chats} from './index.jsx'
+
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,19 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home/>
+      },
+      {
+        path:'/login',
+        element:<Login/>
+      },
+      {
+        path:'register',
+        element: <Register/>
+      },
+      {
+        path: 'all-chats',
+        element: <Chats/>
+
       }
     ]
 },
