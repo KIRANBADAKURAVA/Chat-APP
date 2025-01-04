@@ -11,6 +11,7 @@ import Login from "./pages/Login.jsx";
 import Home from "./pages/Home.jsx";
 import Register from "./pages/Register.jsx";
 import Chats from "./pages/Chats.jsx";
+import AllUsers from "./pages/AllUsers.jsx";
 export {
     Header,
     Home,
@@ -20,5 +21,6 @@ export {
     Chats,
     Userbox,
     SearchBar,
-    ChatBox
+    ChatBox,
+    AllUsers
 }

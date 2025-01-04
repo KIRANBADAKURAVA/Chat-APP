@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChatBox, SearchBar, Userbox } from '../index.jsx';
+import { FiSearch } from 'react-icons/fi';
+import { set } from 'mongoose';
 
 
 export default function Chats() {
@@ -72,17 +74,47 @@ export default function Chats() {
   }
 
   getCurrentUser()
+  const chat1 = chat;
+  const handleSearch = async (term)=>{
   
+if(term === ''){
+  setChats(chat1)
+  return;
+}
+   
+
+    const filteredChats = chat1.filter((chatItem) => {
+      return chatItem.participants[0].username.toLowerCase().includes(term.toLowerCase());
+    });
+
+    setChats(filteredChats);
+
+  }
+
+
  
 
   return (
     <div className="outer_box bg-white w-full h-full flex rounded-x shadow-md">
       {/* Chat List Section */}
       <div className="chat_box flex-[4] w-full h-full rounded-l-xl flex flex-col">
-        <SearchBar />
+         <div className="flex items-center bg-purple-100 rounded-full px-4 py-2 w-full shadow-sm m-2">
+                       {/* Search Icon */}
+                      
+                 
+                       {/* Search Input */}
+                       <input
+                         type="text"
+                         placeholder="Search"
+                         onKeyPress={(e)=> e.key === 'Enter' && handleSearch(e.target.value)}
+                         className="ml-2 bg-transparent outline-none text-gray-600 text-sm w-full"
+                       />
+                        <FiSearch className="text-gray-500 text-lg" />
+                     </div>
         <div className="chat_list overflow-y-auto">
           {chat.length > 0 ? (
             chat.map((chatItem) => (
+              console.log(chatItem),
               <button
                 key={chatItem._id}
                 className="w-full text-left p-2 hover:bg-gray-100"
@@ -91,7 +123,7 @@ export default function Chats() {
                  
                 }}
               >
-                <Userbox userdata={chatItem} unseenmessages={1} />
+                <Userbox userdata={chatItem} />
               </button>
             ))
           ) : (

@@ -225,9 +225,24 @@ const getAllUsers= Asynchandler(async(req, res)=>{
 
 })
 
+// Search user 
 
+const searchUser= Asynchandler(async(req, res)=>{
+    const {username}= req.query
+    //console.log('username', username)
 
+    const users= await User.find({
+        username: {
+            $regex: username,
+            $options: 'i'
+        }
+    }).select('-password -refreshtoken')
 
+    if(!users) throw new ApiError(500, 'something went wrong while fetching users')
+
+    return res.status(200).json(new ApiResponse(200, users, 'Users fetched successfully' ))
+
+})
 
 
 export {
@@ -237,7 +252,8 @@ export {
     UpdateUserProfile,
     currentUserProfile,
     updatePassword,
-    getAllUsers
+    getAllUsers,
+    searchUser
 }
 
 

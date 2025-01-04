@@ -8,6 +8,7 @@ import { FaUsers } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { logout } from "../store/authSilce";
 import { useDispatch } from "react-redux";
+import { MdLogout } from "react-icons/md";
 
 
 const Header = () => {
@@ -36,12 +37,7 @@ const Header = () => {
       name: "Users",
       status: true, 
       html_element: <FaUsers />,
-    },
-    {
-      name: "Profile",
-      status: authStatus,
-      html_element: <CgProfile />,
-    },
+    }
   ];
 
   const handleNavigate = (item) => {

@@ -224,6 +224,7 @@ const deleteChat = Asynchandler(async (req, res) => {
     
     return res.status(200).json(new ApiResponse(200, {}, 'Chat deleted successfully'));
 });
+
 export { getAllChats, 
         createGroupChat, 
         addParticipant, 

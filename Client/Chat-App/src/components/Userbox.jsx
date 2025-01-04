@@ -30,9 +30,7 @@ function Userbox({
           <div className="text-sm text-gray-400">{time}</div>
       
           {/* Notification Badge */}
-          <div className="bg-red-500 text-white text-sm w-5 h-5 flex items-center justify-center rounded-full">
-           { unseenmessages} 
-          </div>
+         
       
           
           

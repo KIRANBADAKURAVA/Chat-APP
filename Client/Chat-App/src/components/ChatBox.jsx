@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
+import { FiSend } from "react-icons/fi";
 
 function ChatBox({ currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
@@ -120,8 +121,8 @@ function ChatBox({ currentUserID, chatId }) {
 
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
-            <div className="chat_header w-full h-16 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold">{recipientName|| "Chat"}</h2>
+            <div className="chat_header w-full p-6 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
+                <h2 className="text-xl font-semibold">{ recipientName|| "Chat"}</h2>
             </div>
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4">
                 {messages.length > 0 ? (
@@ -161,10 +162,10 @@ function ChatBox({ currentUserID, chatId }) {
                     placeholder="Type a message..."
                 />
                 <button
-                    className="message_send_button ml-4 w-12 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
+                    className="message_send_button ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
                     onClick={sendMessage}
                 >
-                    Send
+                    <FiSend />
                 </button>
             </div>
         </div>
