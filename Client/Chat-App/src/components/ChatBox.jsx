@@ -5,6 +5,7 @@ import io from "socket.io-client";
 function ChatBox({ currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
     const [recipientID, setRecipientID] = useState(null);
+    const [recipientName, setRecipientName] = useState(""); 
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
 
@@ -44,6 +45,7 @@ function ChatBox({ currentUserID, chatId }) {
                         const chatData = await chatResponse.json();
                         if (isMounted && chatData.data.length > 0) {
                             setRecipientID(chatData.data[0].reciever[0]._id);
+                            setRecipientName(chatData.data[0].reciever[0].username);
                             setMessages(chatData.data);
                         }
                     } else {
@@ -62,6 +64,7 @@ function ChatBox({ currentUserID, chatId }) {
         }
     }, [chatId]);
 
+    
     // Join chat room when recipientID is set
     useEffect(() => {
         if (recipientID) {
@@ -84,6 +87,7 @@ function ChatBox({ currentUserID, chatId }) {
         };
     }, []);
 
+    // send Messages
     const sendMessage = async () => {
         if (!messageInput.trim()) return;
 
@@ -117,7 +121,7 @@ function ChatBox({ currentUserID, chatId }) {
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             <div className="chat_header w-full h-16 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold">{chatId || "Chat"}</h2>
+                <h2 className="text-xl font-semibold">{recipientName|| "Chat"}</h2>
             </div>
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4">
                 {messages.length > 0 ? (
