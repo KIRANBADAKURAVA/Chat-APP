@@ -8,9 +8,10 @@ import User from "../model/user.model.js"; // Assuming User model is defined
 // create a new individual message
 const AddMessage = Asynchandler(async (req, res) => {
   try {
-    const sender = req.user._id;
+    const senderId = req.user._id;
+    const sender = senderId.toString()
     const receiverId = req.params.userId;
-    console.log(sender);
+    //console.log(sender);
     
     const { content } = req.body;
     //console.log(content);
@@ -28,7 +29,7 @@ const AddMessage = Asynchandler(async (req, res) => {
 
     if (!chat) {
       chat = await Chat.create({
-        participants: [sender, receiverId],
+        participants: [sender, [receiverId]],
         isGroupChat: false,
         latestMessage: content,
       });
@@ -49,6 +50,8 @@ const AddMessage = Asynchandler(async (req, res) => {
     });
 
     if (!newMessage) throw new ApiError(500, "Message not sent");
+    console.log(sender, receiverId);
+    
 
     // Update participants' chat lists
    if(!req.user.chats.includes(chat._id)) {
@@ -66,7 +69,6 @@ const AddMessage = Asynchandler(async (req, res) => {
          chat.messages.push(newMessage._id);
         await chat.save();
 
-        req.app.get('io').to(recipientUser._id.toString()).emit('newMessage', newMessage);
     return res.status(201).json(
       new ApiResponse(201, {
         message: newMessage,
@@ -102,9 +104,7 @@ const AddGroupMessage = Asynchandler(async (req, res) => {
   groupChat.messages.push(newMessage._id);
   await groupChat.save();
 
-  recievers.forEach((reciever) => {
-    req.app.get('io').to(reciever.toString()).emit('newMessage', newMessage);
-  });
+  
 
 
   return res.status(201).json(  

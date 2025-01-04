@@ -3,6 +3,7 @@ import Header from "./components/Header.jsx";
 import Logo from "./components/Logo.jsx";
 import Userbox from "./components/Userbox.jsx";
 import SearchBar from "./components/Searchbar.jsx";
+import ChatBox from "./components/ChatBox.jsx";
 
 
 // Pages
@@ -18,5 +19,6 @@ export {
     Register,
     Chats,
     Userbox,
-    SearchBar
+    SearchBar,
+    ChatBox
 }

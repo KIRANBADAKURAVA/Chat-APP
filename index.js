@@ -1,42 +1,78 @@
 import connectDB from "./db/indexdb.js";
-import dotenv from 'dotenv'
-import app from './app.js'
-import { createServer } from 'http'
-import { Server } from 'socket.io'
+import dotenv from "dotenv";
+import app from "./app.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { log } from "console";
 
-const httpServer = createServer(app)
-
-const io = new Server(httpServer, {
-    cors: {
-        origin: process.env.FRONTEND_URL,
-        credentials: true
-    }
-})
-
-io.on('connection', (socket) => {
-    console.log('a user connected')
-    socket.on('disconnect', () => {
-        console.log('user disconnected')
-    })
-})
-
-
-
-
-
-dotenv.config({
-    path: './.env'
-})
-
+dotenv.config({ path: "./.env" });
 
 connectDB()
-.then(()=>{
-   
- httpServer.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`)
-    app.set('io', io);
-   
-})
-})
-.catch((error )=>(console.error('Error in conneting server at index.js file ',   
-    error)))
+    .then(() => {
+        const httpServer = createServer(app);
+
+        const io = new Server(httpServer, {
+            cors: {
+                origin: process.env.FRONTEND_URL,
+                methods: ["GET", "POST"],
+            },
+        });
+
+        io.on("connection", (socket) => {
+            console.log("New connection");
+
+            // Handle user setup
+            socket.on("setup", (userdata) => {
+                if (userdata && userdata._id) {
+                    socket.join(userdata._id);
+                    console.log("User joined:", userdata._id);
+                    socket.emit("connected");
+                } else {
+                    console.error("Invalid user data:", userdata);
+                }
+            });
+
+            // Handle disconnecting event
+            socket.on("disconnecting", () => {
+                console.log("User disconnecting from rooms:", [...socket.rooms]);
+            });
+
+            // Handle joining a chat room
+            socket.on("join chat", (room) => {
+                if (room) {
+                    socket.join(room);
+                    console.log("User joined room:", room);
+                } else {
+                    console.error("Invalid room:", room);
+                }
+            });
+
+            // Handle new message
+            socket.on("new message", (message) => {
+                console.log("New message received:", message);
+                console.log("Type of message:", typeof message);
+            
+                // Correctly access the `reciever` field inside the nested `message` object
+                const recievers = message?.message?.reciever;
+            
+                if (Array.isArray(recievers)) {
+                    recievers.forEach((reciever) => {
+                        console.log("Sending message to:", reciever);
+                        socket.to(reciever).emit("message received", message);
+                    });
+                } else {
+                    console.error("Invalid receiver data:", recievers);
+                    socket.emit("error", { message: "Invalid receiver data", data: message });
+                }
+            });
+            
+        });
+
+        // Start the server
+        httpServer.listen(process.env.PORT, () => {
+            console.log(`Server is running on port ${process.env.PORT}`);
+        });
+    })
+    .catch((error) => {
+        console.error("Error connecting to the database:", error);
+    });

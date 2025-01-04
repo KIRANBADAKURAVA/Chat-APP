@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
-import { SearchBar, Userbox } from '../index.jsx';
+import { ChatBox, SearchBar, Userbox } from '../index.jsx';
+
 
 export default function Chats() {
   const [chat, setChats] = useState([]);
-
+  const [currentUserID, setCurrentUserID] = useState(null);
+  const [chatID, setChatID] = useState(null);
+  
+  // fetch chats
   useEffect(() => {
     const fetchChats = async () => {
       try {
@@ -17,9 +21,9 @@ export default function Chats() {
 
         if (response.ok) {
           const data = await response.json();
+          setChats(data.data);
           //console.log(data.data);
-          setChats(data.data); // Adjust based on your API response structure
-
+          
         } else {
           console.error('Failed to fetch chats:', response.statusText);
         }
@@ -31,23 +35,76 @@ export default function Chats() {
     fetchChats();
   }, []);
 
+  
+
+    
+
+
+  // fetch messages
+  const handleChatClick = async (chatId) => {
+  
+   setChatID(chatId);
+  };
+
+  // fetch current user
+  async function getCurrentUser() {
+    try {
+      const response = await fetch('http://localhost:9000/api/v1/user/getuser', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('accesstoken')}`,
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+         //console.log(data.data._id);
+        setCurrentUserID(data.data._id);
+      } else {
+        console.error('Failed to fetch user:', response.statusText);
+        return null; // Return null or handle as needed
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error.message);
+      return null; // Handle errors appropriately
+    }
+  }
+
+  getCurrentUser()
+  
+ 
+
   return (
     <div className="outer_box bg-white w-full h-full flex rounded-x shadow-md">
+      {/* Chat List Section */}
       <div className="chat_box flex-[4] w-full h-full rounded-l-xl flex flex-col">
         <SearchBar />
         <div className="chat_list overflow-y-auto">
           {chat.length > 0 ? (
             chat.map((chatItem) => (
-              <Userbox key={chatItem._id}  userdata={chatItem} unseenmessages={1} />
+              <button
+                key={chatItem._id}
+                className="w-full text-left p-2 hover:bg-gray-100"
+                onClick = {() => {  
+                  handleChatClick(chatItem._id)
+                 
+                }}
+              >
+                <Userbox userdata={chatItem} unseenmessages={1} />
+              </button>
             ))
           ) : (
             <p className="text-center text-gray-500">No chats available</p>
           )}
-         
         </div>
       </div>
-      <div className="Message_box flex-[6] h-full rounded-r-xl">
-        {/* Message display area */}
+
+      {/* Messages Section */}
+      <div className="Message_box flex-[6] h-full rounded-r-xl p-4 bg-gray-50">
+        
+          <ChatBox currentUserID={currentUserID} chatId={chatID} />
+         
       </div>
     </div>
   );

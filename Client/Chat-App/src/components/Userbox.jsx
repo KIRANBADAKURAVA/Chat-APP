@@ -18,7 +18,7 @@ function Userbox({
       
           {/* Chat Details */}
           <div className="ml-3 ">
-            <div className="text-gray-900 font-semibold">Design chat</div>
+            <div className="text-gray-900 font-semibold">{userdata.participants[0].username}</div>
             <div className="text-sm text-gray-500">
              {userdata.latestMessage} 
             </div>

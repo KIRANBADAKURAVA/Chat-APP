@@ -188,8 +188,29 @@ const getAllMessages = Asynchandler(async (req, res) => {
             },
         },
     ]);
+    //console.log(AllMessages);
+   
+    const filterdparticipants = AllMessages.map((chat) => {
+        return {
+            ...chat,
+            participants: chat.participants.filter(
+                (participant) => {
+                    return participant._id.toString() !== req.user._id.toString();
+                }
+            ),
+        };
+    });
 
-    return res.status(200).json(new ApiResponse(200, AllMessages, 'All messages fetched successfully'));
+    //console.log(filterdparticipants[0].messages[0]);
+    const messages = filterdparticipants[0].messages.map((message) => {
+      message.sender = message.sender[0];
+
+      return message;
+    }
+    );
+
+    //console.log(messages);
+    return res.status(200).json(new ApiResponse(200, messages, 'All messages in chat fetched successfully'));
     
 })
 
