@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import SearchBar from '../components/SearchBar';
-
 import { FiSearch } from 'react-icons/fi';
-
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
+
 
 function AllUsers() {
   const [user, setUser] = useState([]);
   const [hoveredUserId, setHoveredUserId] = useState(null);
   const navigate = useNavigate();
+
+    const authStatus = useSelector((state) => state.auth.status);
+  
 
   useEffect(() => {
     async function getUsers() {
@@ -36,6 +39,12 @@ function AllUsers() {
   }, []);
 
   const handleChatClick = async (user) => {
+    if (!authStatus) {
+
+      navigate('/login')
+      
+    }
+    
     try {
       const response = await fetch(`http://localhost:9000/api/v1/message/sendIndividualMessage/${user._id}`, {
         method: 'POST',
@@ -138,10 +147,14 @@ function AllUsers() {
                   </div>
 
                   {/* "Say Hi" Text */}
-                  {hoveredUserId === userItem._id && (
-                    <div className="text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-lg shadow-md ">
-                      Say Hi
-                    </div>
+                  {hoveredUserId === userItem._id &&  (
+                   authStatus?   <div className="text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-lg shadow-md ">
+                   Say Hi
+                 </div>:
+                 
+                 <div className="text-sm text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-lg shadow-md ">
+                 Login
+               </div>
                   )}
                 </div>
                 </button>
