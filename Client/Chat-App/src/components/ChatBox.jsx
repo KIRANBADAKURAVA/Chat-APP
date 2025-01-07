@@ -9,6 +9,7 @@ function ChatBox({ currentUserID, chatId }) {
     const [recipientName, setRecipientName] = useState(""); 
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
+    const [chatName, setChatName] = useState("");
 
     const ENDPOINT = "http://localhost:9000";
 
@@ -23,6 +24,36 @@ function ChatBox({ currentUserID, chatId }) {
             socketRef.current.disconnect();
         };
     }, []);
+
+
+    // get chatname
+
+  useEffect(() => {
+    async function getChatName(chatId) {
+        try {
+            const response = await fetch(`http://localhost:9000/api/v1/chat/getchatbyid/${chatId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                //console.log("chatname",data.data.participants[0].username  );
+                setChatName(data.data.participants[0].username)
+            } else {
+                console.error("Failed to fetch chat name:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching chat name:", error.message);
+        }
+    }
+     getChatName(chatId);
+    }, [chatId]);
+
+
 
     // Fetch chat messages and set recipient ID
     useEffect(() => {
@@ -108,7 +139,7 @@ function ChatBox({ currentUserID, chatId }) {
             if (response.ok) {
                 const data = await response.json();
                 socketRef.current.emit("new message", { message: data.data.message });
-                    console.log("send method", data.data.message);  
+                    //console.log("send method", data.data.message);  
                 setMessages((prevMessages) => [...prevMessages, data.data.message]);
                 setMessageInput("");
             } else {
@@ -122,14 +153,14 @@ function ChatBox({ currentUserID, chatId }) {
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             <div className="chat_header w-full p-6 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold">{ recipientName|| "Chat"}</h2>
+                <h2 className="text-xl font-semibold">{ chatName|| "Chat"}</h2>
             </div>
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4">
                 {messages.length > 0 ? (
                     messages.map((message) => {
                         let isCurrentUser;
                         (message.sender?._id === currentUserID || message.sender === currentUserID) ? isCurrentUser = true : isCurrentUser = false;
-                        console.log("in loop", message.sender);
+                        //console.log("in loop", message.sender);
                         return (
                             <div
                                 key={message._id || Math.random()}

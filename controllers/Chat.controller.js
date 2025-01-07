@@ -6,6 +6,67 @@ import User from "../model/user.model.js";
 import mongoose from 'mongoose';
 
 
+
+// get chat by id
+
+const getChatbyId = Asynchandler(async (req, res) => {
+  const chatId = req.params.chatId;
+
+  // Validate chatId
+  if (!mongoose.Types.ObjectId.isValid(chatId)) {
+      throw new ApiError(400, 'Invalid chat ID');
+  }
+
+  const chat = await Chat.aggregate([
+      {
+          $match: { _id: new mongoose.Types.ObjectId(chatId) },
+      },
+      {
+          $lookup: {
+              from: 'users',
+              let: { participants: '$participants' },
+              pipeline: [
+                  {
+                      $match: {
+                          $expr: { $in: ['$_id', '$$participants'] },
+                      },
+                  },
+                  {
+                      $project: {
+                          username: 1,
+                          profilePicture: 1,
+                      },
+                  },
+              ],
+              as: 'participants',
+          },
+      },
+  ]);
+
+  // Check if chat was found
+  if (chat.length === 0) {
+      throw new ApiError(404, 'Chat not found');
+  }
+
+  // Extract the first chat (since aggregate always returns an array)
+  const chatData = chat[0];
+
+  // Filter participants to exclude the requesting user
+  const filteredParticipants = chatData.participants.filter(
+      (participant) => participant._id.toString() !== req.user._id.toString()
+  );
+
+  chatData.participants = filteredParticipants;
+
+  return res
+      .status(200)
+      .json(new ApiResponse(200, chatData, 'Chat fetched successfully'));
+});
+
+
+
+
+
 // get all chats
 
 const getAllChats = Asynchandler(async (req, res) => {
@@ -61,7 +122,7 @@ const getAllChats = Asynchandler(async (req, res) => {
   });
   
 
-  // create a group chat
+// create a group chat
 
   const createGroupChat = Asynchandler(async (req, res) => {
     const AdminId = req.user._id;
@@ -78,7 +139,7 @@ const getAllChats = Asynchandler(async (req, res) => {
     }    
     );
 
-//update group name
+// update group name
 const updateGroupName = Asynchandler(async (req, res) => {
     const chatId = req.params.chatId;
     const { groupName } = req.body;
@@ -231,5 +292,6 @@ export { getAllChats,
         getAllMessages,
         deleteChat,
         updateGroupName,
-        removeParticipant
+        removeParticipant,
+        getChatbyId
       };

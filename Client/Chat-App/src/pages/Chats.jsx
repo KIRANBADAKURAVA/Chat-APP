@@ -114,7 +114,7 @@ if(term === ''){
         <div className="chat_list overflow-y-auto">
           {chat.length > 0 ? (
             chat.map((chatItem) => (
-              console.log(chatItem),
+              //console.log(chatItem),
               <button
                 key={chatItem._id}
                 className="w-full text-left p-2 hover:bg-gray-100"

@@ -57,7 +57,7 @@ function AllUsers() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
+       // console.log(data);
         navigate('/all-chats');
       } else {
         console.error('Failed to create chat:', response.statusText);

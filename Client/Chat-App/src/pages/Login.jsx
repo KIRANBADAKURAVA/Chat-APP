@@ -25,7 +25,7 @@ function Login() {
         
         
       });
-      console.log(response);
+     // console.log(response);
 
       if (!response.ok) {
         throw new Error("Login failed. Please check your credentials.");
