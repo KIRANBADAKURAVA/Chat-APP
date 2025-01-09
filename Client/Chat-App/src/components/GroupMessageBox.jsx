@@ -7,7 +7,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
     const [chat, setChat] = useState({});
-    const ENDPOINT = "http://localhost:9000";
+    const ENDPOINT = "https://chat-app-backend-ezj4.onrender.com";
 
     // Initialize socket connection
     useEffect(() => {
@@ -25,7 +25,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
     useEffect(() => {
         async function getChatDetails(chatId) {
             try {
-                const response = await fetch(`http://localhost:9000/api/v1/chat/getchatbyid/${chatId}`, {
+                const response = await fetch(`https://chat-app-backend-ezj4.onrender.com/api/v1/chat/getchatbyid/${chatId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -52,7 +52,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
             const fetchMessages = async () => {
                 try {
                     const response = await fetch(
-                        `http://localhost:9000/api/v1/chat/getallmessages/${chatId}`,
+                        `https://chat-app-backend-ezj4.onrender.com/api/v1/chat/getallmessages/${chatId}`,
                         {
                             method: "GET",
                             headers: {
@@ -104,7 +104,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
 
         try {
             const response = await fetch(
-                `http://localhost:9000/api/v1/message/sendGroupMessage/${chatId}`,
+                `https://chat-app-backend-ezj4.onrender.com/api/v1/message/sendGroupMessage/${chatId}`,
                 {
                     method: "POST",
                     headers: {
