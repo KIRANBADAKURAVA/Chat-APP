@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
 
-function ChatBox({ currentUserID, chatId }) {
+function GroupMessageBox({ currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
     const [recipientID, setRecipientID] = useState(null);
     const [recipientName, setRecipientName] = useState(""); 
@@ -13,7 +13,7 @@ function ChatBox({ currentUserID, chatId }) {
     const [chat , setChat] = useState({})
     
 
-    console.log("chatId", chatId);
+
     
     const ENDPOINT = "http://localhost:9000";
 
@@ -46,6 +46,7 @@ function ChatBox({ currentUserID, chatId }) {
             if (response.ok) {
                 const data = await response.json();
                 //console.log("chatname",data.data.participants[0].username  );
+                setChat(data.data)
                 setChatName(data.data.participants[0].username)
             } else {
                 console.error("Failed to fetch chat name:", response.statusText);
@@ -103,11 +104,11 @@ function ChatBox({ currentUserID, chatId }) {
     
     // Join chat room when recipientID is set
     useEffect(() => {
-        if (recipientID) {
-            socketRef.current.emit("setup", { _id: recipientID });
-            socketRef.current.emit("join chat", recipientID);
+        if (chatId) {
+            socketRef.current.emit("setup", { _id: chatId });
+            socketRef.current.emit("join chat", chatId);
         }
-    }, [recipientID]);
+    }, [chatId]);
 
     // Handle incoming messages
     useEffect(() => {
@@ -129,7 +130,7 @@ function ChatBox({ currentUserID, chatId }) {
 
         try {
             const response = await fetch(
-                `http://localhost:9000/api/v1/message/sendIndividualMessage/${recipientID}`,
+                `http://localhost:9000/api/v1/message/sendGroupMessage/${chatId}`,
                 {
                     method: "POST",
                     headers: {
@@ -143,8 +144,8 @@ function ChatBox({ currentUserID, chatId }) {
             if (response.ok) {
                 const data = await response.json();
                 socketRef.current.emit("new message", { message: data.data.message });
-                    //console.log("send method", data.data.message);  
-                setMessages((prevMessages) => [...prevMessages, data.data.message]);
+                    console.log("send method", data.data);  
+                setMessages((prevMessages) => [...prevMessages, data.data]);
                 setMessageInput("");
             } else {
                 console.error("Failed to send message:", response.statusText);
@@ -157,7 +158,7 @@ function ChatBox({ currentUserID, chatId }) {
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             <div className="chat_header w-full p-6 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold">{ chatName|| "Chat"}</h2>
+                <h2 className="text-xl font-semibold">{ chat.groupChatName|| "Chat"}</h2>
             </div>
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4">
                 {messages.length > 0 ? (
@@ -207,4 +208,4 @@ function ChatBox({ currentUserID, chatId }) {
     );
 }
 
-export default ChatBox;
+export default GroupMessageBox;

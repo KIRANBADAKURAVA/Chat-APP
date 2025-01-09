@@ -67,7 +67,7 @@ const Header = () => {
       </div>
 
       {/* Navigation Items */}
-      <div className="nav-items mt-4 flex flex-col items-center space-y-6">
+      <div className="nav-items mt-4 flex flex-col items-center text-xl space-y-6">
         {navItems.map((item) =>
           item.status ? (
             <div
@@ -78,7 +78,7 @@ const Header = () => {
                 onClick={() => handleNavigate(item)} // Wrap in an arrow function
                 className="flex flex-col items-center text-white"
               >
-                <div className="icon text-2xl">{item.html_element}</div>
+                <div className="icon ">{item.html_element}</div>
                 <div className="name mt-2">{item.name}</div>
               </button>
             </div>

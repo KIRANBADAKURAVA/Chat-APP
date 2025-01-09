@@ -71,73 +71,113 @@ const getChatbyId = Asynchandler(async (req, res) => {
 
 const getAllChats = Asynchandler(async (req, res) => {
     const userId = req.user._id;
-  
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        throw new ApiError(400, 'Invalid user ID');
+    }
+
     const chats = await User.aggregate([
-      {
-        $match: {
-          _id:  new mongoose.Types.ObjectId(userId),
+        {
+            $match: { _id: new mongoose.Types.ObjectId(userId) },
         },
-      },
-      {
-        $lookup: {
-          from: 'chats', 
-          localField: 'chats',
-          foreignField: '_id',
-          as: 'chats',
-          pipeline: [
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'participants',
-                foreignField: '_id',
-                as: 'participants',
+        {
+            $lookup: {
+                from: 'chats',
+                let: { userChats: '$chats' },
                 pipeline: [
-                  {
-                    $project: {
-                      username: 1,
-                      profilePicture: 1,
+                    {
+                        $match: { $expr: { $in: ['$_id', '$$userChats'] } },
                     },
-                  },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            let: { chatParticipants: '$participants' },
+                            pipeline: [
+                                {
+                                    $match: { $expr: { $in: ['$_id', '$$chatParticipants'] } },
+                                },
+                                {
+                                    $project: { username: 1, profilePicture: 1 },
+                                },
+                            ],
+                            as: 'participants',
+                        },
+                    },
                 ],
-              },
+                as: 'chats',
             },
-          ],
         },
-      },
     ]);
-  
-    if (!chats || chats.length === 0) throw new ApiError(404, 'No chat found');
-    
-    const chatw = chats[0].chats.map((chat) => {
+
+    if (!chats || chats.length === 0) {
+        throw new ApiError(404, 'No chats found');
+    }
+
+    const userChats = chats[0].chats;
+
+    // Process each chat
+    const formattedChats = userChats.map((chat) => {
+        if (chat.isGroupChat) {
+            return chat; // Return group chat as-is
+        }
         return {
-          ...chat,
-          participants: chat.participants.filter(
-            (participant) => {
-                //console.log(participant._id.toString(), userId.toString());
-                return participant._id.toString() !== userId.toString()}
-          ),
+            ...chat,
+            participants: chat.participants.filter(
+                (participant) => participant._id.toString() !== userId.toString()
+            ),
         };
-      });
-          return res.status(200).json(new ApiResponse(200, chatw, 'All chats fetched successfully'));
-  });
+    });
+
+    return res.status(200).json(new ApiResponse(200, formattedChats, 'All chats fetched successfully'));
+});
+
   
 
 // create a group chat
 
-  const createGroupChat = Asynchandler(async (req, res) => {
-    const AdminId = req.user._id;
-    const { groupName } = req.body;
-    const group = Chat.create({
-      participants: [AdminId],
-      isGroupChat: true,
-      groupName: groupName,
+const createGroupChat = Asynchandler(async (req, res) => {
+    const AdminId = req.user._id; 
+    const { groupName, participants } = req.body; 
+
+    
+    const updatedParticipants = [...participants, AdminId.toString()];
+
+    // Create group chat
+    const group = await Chat.create({
+        participants: updatedParticipants,
+        isGroupChat: true,
+        groupChatName: groupName,
+        
     });
 
     if (!group) throw new ApiError(500, 'Group chat not created');
+    console.log(group._id);
+    
+
+    // Add group ID to each participant's "chats"
+    try {
+        for (const userId of updatedParticipants) {
+            
+            
+            const user = await User.findById(userId);
+            if (!user) {
+                console.log('user not found');
+                continue
+            }; 
+            
+            
+            user.chats.push(group._id);
+            console.log(user.chats);
+            await user.save(); 
+        }
+    } catch (error) {
+        console.error('Error updating users with group chat:', error);
+        throw new ApiError(500, 'Failed to update user chats');
+    }
 
     return res.status(201).json(new ApiResponse(201, group, 'Group chat created successfully'));
-    }    
-    );
+});
+
 
 // update group name
 const updateGroupName = Asynchandler(async (req, res) => {

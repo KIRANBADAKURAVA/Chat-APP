@@ -6,7 +6,7 @@ function Userbox({
 }){
     const time = new Date(userdata.createdAt).toLocaleTimeString()
 
-  console.log(time)
+  //console.log(time)
     return(
         <div className="flex items-center justify-between bg-gray-100 hover:bg-gray-400 p-4 m-1 rounded-lg shadow-sm w-full">
 
@@ -18,7 +18,7 @@ function Userbox({
       
           {/* Chat Details */}
           <div className="ml-3 ">
-            <div className="text-gray-900 font-semibold">{userdata.participants[0].username}</div>
+            <div className="text-gray-900 font-semibold">{userdata.groupChatName || userdata.participants[0].username}</div>
             <div className="text-sm text-gray-500">
              {userdata.latestMessage} 
             </div>

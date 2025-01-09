@@ -12,6 +12,7 @@ import Home from "./pages/Home.jsx";
 import Register from "./pages/Register.jsx";
 import Chats from "./pages/Chats.jsx";
 import AllUsers from "./pages/AllUsers.jsx";
+import GroupBox from "./components/GroupBox.jsx";
 export {
     Header,
     Home,
@@ -22,5 +23,6 @@ export {
     Userbox,
     SearchBar,
     ChatBox,
-    AllUsers
+    AllUsers,
+    GroupBox
 }

@@ -115,6 +115,7 @@ function AllUsers() {
                <input
                  type="text"
                  placeholder="Search"
+                 onChange={(e) => handleSearch(e.target.value)}
                  onKeyPress={(e)=> e.key === 'Enter' && handleSearch(e.target.value)}
                  className="ml-2 bg-transparent outline-none text-gray-600 text-sm w-full"
                />
