@@ -5,3 +5,12 @@
 html {
     margin: 0;
 }
+.chat_list {
+    overflow-y: scroll;
+    scrollbar-width: none; /* For Firefox */
+  }
+  
+  .chat_list::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
+  }
+  

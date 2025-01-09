@@ -1,20 +1,12 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
 
 function GroupMessageBox({ currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
-    const [recipientID, setRecipientID] = useState(null);
-    const [recipientName, setRecipientName] = useState(""); 
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
-    const [chatName, setChatName] = useState("");
-    const [chat , setChat] = useState({})
-    
-
-
-    
+    const [chat, setChat] = useState({});
     const ENDPOINT = "http://localhost:9000";
 
     // Initialize socket connection
@@ -29,45 +21,37 @@ function GroupMessageBox({ currentUserID, chatId }) {
         };
     }, []);
 
+    // Fetch chat details
+    useEffect(() => {
+        async function getChatDetails(chatId) {
+            try {
+                const response = await fetch(`http://localhost:9000/api/v1/chat/getchatbyid/${chatId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
+                    },
+                });
 
-    // get chatname
-
-  useEffect(() => {
-    async function getChatName(chatId) {
-        try {
-            const response = await fetch(`http://localhost:9000/api/v1/chat/getchatbyid/${chatId}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                //console.log("chatname",data.data.participants[0].username  );
-                setChat(data.data)
-                setChatName(data.data.participants[0].username)
-            } else {
-                console.error("Failed to fetch chat name:", response.statusText);
+                if (response.ok) {
+                    const data = await response.json();
+                    setChat(data.data);
+                } else {
+                    console.error("Failed to fetch chat details:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error fetching chat details:", error.message);
             }
-        } catch (error) {
-            console.error("Error fetching chat name:", error.message);
         }
-    }
-     getChatName(chatId);
+        getChatDetails(chatId);
     }, [chatId]);
 
-
-
-    // Fetch chat messages and set recipient ID
+    // Fetch chat messages
     useEffect(() => {
         if (chatId) {
-            let isMounted = true;
-
             const fetchMessages = async () => {
                 try {
-                    const chatResponse = await fetch(
+                    const response = await fetch(
                         `http://localhost:9000/api/v1/chat/getallmessages/${chatId}`,
                         {
                             method: "GET",
@@ -78,31 +62,22 @@ function GroupMessageBox({ currentUserID, chatId }) {
                         }
                     );
 
-                    if (chatResponse.ok) {
-                        const chatData = await chatResponse.json();
-                        if (isMounted && chatData.data.length > 0) {
-                            setRecipientID(chatData.data[0].reciever[0]._id);
-                            setRecipientName(chatData.data[0].reciever[0].username);
-                            setMessages(chatData.data);
-                        }
+                    if (response.ok) {
+                        const data = await response.json();
+                        setMessages(data.data);
                     } else {
-                        console.error("Failed to fetch chat messages:", chatResponse.statusText);
+                        console.error("Failed to fetch messages:", response.statusText);
                     }
                 } catch (error) {
-                    console.error("Error fetching chat messages:", error.message);
+                    console.error("Error fetching messages:", error.message);
                 }
             };
 
             fetchMessages();
-
-            return () => {
-                isMounted = false;
-            };
         }
     }, [chatId]);
 
-    
-    // Join chat room when recipientID is set
+    // Join chat room
     useEffect(() => {
         if (chatId) {
             socketRef.current.emit("setup", { _id: chatId });
@@ -113,7 +88,6 @@ function GroupMessageBox({ currentUserID, chatId }) {
     // Handle incoming messages
     useEffect(() => {
         socketRef.current.on("message received", (newMessage) => {
-            //console.log("New message received:", newMessage.message);
             if (newMessage?.message) {
                 setMessages((prevMessages) => [...prevMessages, newMessage.message]);
             }
@@ -124,7 +98,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
         };
     }, [chatId]);
 
-    // send Messages
+    // Send message
     const sendMessage = async () => {
         if (!messageInput.trim()) return;
 
@@ -144,7 +118,6 @@ function GroupMessageBox({ currentUserID, chatId }) {
             if (response.ok) {
                 const data = await response.json();
                 socketRef.current.emit("new message", { message: data.data.message });
-                    console.log("send method", data.data);  
                 setMessages((prevMessages) => [...prevMessages, data.data]);
                 setMessageInput("");
             } else {
@@ -158,21 +131,26 @@ function GroupMessageBox({ currentUserID, chatId }) {
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             <div className="chat_header w-full p-6 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold">{ chat.groupChatName|| "Chat"}</h2>
+                <h2 className="text-xl font-semibold">{chat.groupChatName || "Group Chat"}</h2>
             </div>
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4">
                 {messages.length > 0 ? (
                     messages.map((message) => {
-                        let isCurrentUser;
-                        (message.sender?._id === currentUserID || message.sender === currentUserID) ? isCurrentUser = true : isCurrentUser = false;
-                        //console.log("in loop", message.sender);
+                        const isCurrentUser = message.sender?._id === currentUserID || message.sender === currentUserID;
+                        const senderProfilePic = message.sender?.profilePic || "https://via.placeholder.com/40";
+
                         return (
                             <div
                                 key={message._id || Math.random()}
-                                className={`message_box flex ${
-                                    isCurrentUser ? "flex-row-reverse" : "flex-row"
-                                } items-center w-full mb-3`}
+                                className={`message_box flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} items-center w-full mb-4`}
                             >
+                                {!isCurrentUser && (
+                                    <img
+                                        src={senderProfilePic}
+                                        alt="Profile"
+                                        className="w-10 h-10 rounded-full mr-3"
+                                    />
+                                )}
                                 <div
                                     className={`message max-w-xs px-4 py-2 rounded-lg shadow-md ${
                                         isCurrentUser

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChatBox, Userbox, GroupBox } from '../index.jsx';
 import { FiSearch } from 'react-icons/fi';
 import GroupMessageBox from '../components/GroupMessageBox.jsx';
+import { BsChatRightText } from "react-icons/bs";
 
 export default function Chats() {
   const [chat, setChats] = useState([]);
@@ -108,9 +109,9 @@ export default function Chats() {
         ) : (
           <div
             onClick={() => setGroupbox(true)}
-            className="h-16 w-8 bg-black absolute bottom-4 right-4 rounded-md flex items-center justify-center text-white font-bold cursor-pointer"
+            className="h-14 w-14  text-xl bg-blue-600 absolute bottom-4 right-4 rounded-md flex items-center justify-center text-white rounded-md font-bold cursor-pointer"
           >
-            +
+           <BsChatRightText />
           </div>
         )}
 

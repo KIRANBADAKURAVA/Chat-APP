@@ -5,10 +5,8 @@ import { CiLogin } from "react-icons/ci";
 import { FaRegRegistered } from "react-icons/fa";
 import { BsChatSquare } from "react-icons/bs";
 import { FaUsers } from "react-icons/fa";
-import { CgProfile } from "react-icons/cg";
 import { logout } from "../store/authSilce";
 import { useDispatch } from "react-redux";
-import { MdLogout } from "react-icons/md";
 
 
 const Header = () => {
@@ -75,7 +73,7 @@ const Header = () => {
               className="rounded-2xl p-3 hover:bg-blue-300 transition"
             >
               <button
-                onClick={() => handleNavigate(item)} // Wrap in an arrow function
+                onClick={() => handleNavigate(item)}
                 className="flex flex-col items-center text-white"
               >
                 <div className="icon ">{item.html_element}</div>
