@@ -13,7 +13,7 @@ function AllUsers() {
   useEffect(() => {
     async function getUsers() {
       try {
-        const response = await fetch('http://localhost:9000/api/v1/user/getallusers', {
+        const response = await fetch('https://chat-app-1-h2m8.onrender.com/api/v1/user/getallusers', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ function AllUsers() {
     }
 
     try {
-      const response = await fetch(`http://localhost:9000/api/v1/message/sendIndividualMessage/${user._id}`, {
+      const response = await fetch(`https://chat-app-1-h2m8.onrender.com/api/v1/message/sendIndividualMessage/${user._id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ function AllUsers() {
 
   const handleSearch = async (term) => {
     try {
-      const response = await fetch(`http://localhost:9000/api/v1/user/searchuser?username=${term}`, {
+      const response = await fetch(`https://chat-app-1-h2m8.onrender.com/api/v1/user/searchuser?username=${term}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

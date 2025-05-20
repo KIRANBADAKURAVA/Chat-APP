@@ -15,7 +15,7 @@ function ChatBox({ currentUserID, chatId }) {
 
     console.log("chatId", chatId);
     
-    const ENDPOINT = "http://localhost:9000";
+    const ENDPOINT = "https://chat-app-1-h2m8.onrender.com";
 
     // Initialize socket connection
     useEffect(() => {
@@ -35,7 +35,7 @@ function ChatBox({ currentUserID, chatId }) {
   useEffect(() => {
     async function getChatName(chatId) {
         try {
-            const response = await fetch(`http://localhost:9000/api/v1/chat/getchatbyid/${chatId}`, {
+            const response = await fetch(`https://chat-app-1-h2m8.onrender.com/api/v1/chat/getchatbyid/${chatId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -67,7 +67,7 @@ function ChatBox({ currentUserID, chatId }) {
             const fetchMessages = async () => {
                 try {
                     const chatResponse = await fetch(
-                        `http://localhost:9000/api/v1/chat/getallmessages/${chatId}`,
+                        `https://chat-app-1-h2m8.onrender.com/api/v1/chat/getallmessages/${chatId}`,
                         {
                             method: "GET",
                             headers: {
@@ -129,7 +129,7 @@ function ChatBox({ currentUserID, chatId }) {
 
         try {
             const response = await fetch(
-                `http://localhost:9000/api/v1/message/sendIndividualMessage/${recipientID}`,
+                `https://chat-app-1-h2m8.onrender.com/api/v1/message/sendIndividualMessage/${recipientID}`,
                 {
                     method: "POST",
                     headers: {
