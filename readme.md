@@ -1,5 +1,9 @@
 # Real-Time Chat Application
 
+## Link to website
+
+[Visit the Website](https://chat-app-3m8g.vercel.app/)
+
 ## Overview
 A fully functional real-time chat application featuring robust frontend and backend capabilities. Designed to provide seamless communication between users, the application includes real-time messaging, group chat functionalities, and secure authentication mechanisms.
 
