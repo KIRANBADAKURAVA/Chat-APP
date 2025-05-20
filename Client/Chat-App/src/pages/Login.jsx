@@ -13,7 +13,7 @@ function Login() {
 
   const login = async (data) => {
     try {
-      const response =  await fetch("https://chat-app-backend-ezj4.onrender.com/api/v1/user/login", {
+      const response =  await fetch("http://localhost:9000/api/v1/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

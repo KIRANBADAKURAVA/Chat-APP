@@ -11,6 +11,7 @@ import { fileupload, filedelete } from "../utils/cloudinary.js";
 const UserRegistration= Asynchandler(async(req, res)=>{
 
     const {username, password} = req.body
+    console.log(req.body)
     if(!username|| !password) throw new ApiError(401, 'All fields are required' )
 
       const exsistingUser=  await User.findOne({

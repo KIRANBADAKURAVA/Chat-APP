@@ -33,7 +33,7 @@ function Register() {
                 formData.append('profilePicture', profilePic);
             }
 
-            const response = await fetch('https://chat-app-backend-ezj4.onrender.com/api/v1/user/register', {
+            const response = await fetch('http://localhost:9000/api/v1/user/register', {
                 method: 'POST',
                 body: formData,
             });
