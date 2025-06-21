@@ -16,11 +16,7 @@ export default function Chats() {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-<<<<<<< HEAD
         const response = await fetch('/api/v1/chat/getallchats', {
-=======
-        const response = await fetch('https://chat-app-1-h2m8.onrender.com/api/v1/chat/getallchats', {
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -47,11 +43,7 @@ export default function Chats() {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
-<<<<<<< HEAD
         const response = await fetch('/api/v1/user/getuser', {
-=======
-        const response = await fetch('https://chat-app-1-h2m8.onrender.com/api/v1/user/getuser', {
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

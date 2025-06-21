@@ -8,13 +8,8 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     const [chatName, setChatName] = useState("");
     const messagesEndRef = useRef(null);
     const socketRef = useRef(null);
-<<<<<<< HEAD
 
     const ENDPOINT = ""; // Not needed for proxy
-=======
-    const [chat, setChat] = useState({});
-    const ENDPOINT = "https://chat-app-1-h2m8.onrender.com";
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
 
     // Initialize socket connection
     useEffect(() => {
@@ -32,11 +27,7 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     useEffect(() => {
         async function getChatDetails(chatId) {
             try {
-<<<<<<< HEAD
                 const response = await fetch(`/api/v1/chat/getchatbyid/${chatId}`, {
-=======
-                const response = await fetch(`https://chat-app-1-h2m8.onrender.com/api/v1/chat/getchatbyid/${chatId}`, {
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -63,11 +54,7 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
             const fetchMessages = async () => {
                 try {
                     const response = await fetch(
-<<<<<<< HEAD
                         `/api/v1/chat/getallmessages/${chatId}`,
-=======
-                        `https://chat-app-1-h2m8.onrender.com/api/v1/chat/getallmessages/${chatId}`,
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
                         {
                             method: "GET",
                             headers: {
@@ -125,11 +112,7 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
 
         try {
             const response = await fetch(
-<<<<<<< HEAD
                 `/api/v1/message/sendGroupMessage/${chatId}`,
-=======
-                `https://chat-app-1-h2m8.onrender.com/api/v1/message/sendGroupMessage/${chatId}`,
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
                 {
                     method: "POST",
                     headers: {

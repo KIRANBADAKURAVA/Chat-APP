@@ -14,11 +14,7 @@ function GroupBox({ setGroupbox , currentUserID}) {
   useEffect(() => {
     async function getUsers() {
       try {
-<<<<<<< HEAD
         const response = await fetch('/api/v1/user/getallusers', {
-=======
-        const response = await fetch('https://chat-app-1-h2m8.onrender.com/api/v1/user/getallusers', {
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -75,11 +71,7 @@ function GroupBox({ setGroupbox , currentUserID}) {
 
           
       
-<<<<<<< HEAD
           const response = await fetch('/api/v1/chat/creategroupchat', {
-=======
-          const response = await fetch(`https://chat-app-1-h2m8.onrender.com/api/v1/chat/creategroupchat`, {
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

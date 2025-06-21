@@ -15,13 +15,7 @@ function ChatBox({ currentUserID, chatId }) {
     const [lastSeen, setLastSeen] = useState(null); // Mocked for now
     const typingTimeout = useRef(null);
 
-<<<<<<< HEAD
     const ENDPOINT = ""; // Not needed for proxy
-=======
-    console.log("chatId", chatId);
-    
-    const ENDPOINT = "https://chat-app-1-h2m8.onrender.com";
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
 
     // Initialize socket connection
     useEffect(() => {
@@ -35,7 +29,6 @@ function ChatBox({ currentUserID, chatId }) {
     }, []);
 
     // get chatname
-<<<<<<< HEAD
     useEffect(() => {
         async function getChatName(chatId) {
             try {
@@ -56,26 +49,6 @@ function ChatBox({ currentUserID, chatId }) {
                 }
             } catch (error) {
                 console.error("Error fetching chat name:", error.message);
-=======
-
-  useEffect(() => {
-    async function getChatName(chatId) {
-        try {
-            const response = await fetch(`https://chat-app-1-h2m8.onrender.com/api/v1/chat/getchatbyid/${chatId}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                //console.log("chatname",data.data.participants[0].username  );
-                setChatName(data.data.participants[0].username)
-            } else {
-                console.error("Failed to fetch chat name:", response.statusText);
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
             }
         }
         getChatName(chatId);
@@ -88,11 +61,7 @@ function ChatBox({ currentUserID, chatId }) {
             const fetchMessages = async () => {
                 try {
                     const chatResponse = await fetch(
-<<<<<<< HEAD
                         `/api/v1/chat/getallmessages/${chatId}`,
-=======
-                        `https://chat-app-1-h2m8.onrender.com/api/v1/chat/getallmessages/${chatId}`,
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
                         {
                             method: "GET",
                             headers: {
@@ -186,11 +155,7 @@ function ChatBox({ currentUserID, chatId }) {
         if (!messageInput.trim()) return;
         try {
             const response = await fetch(
-<<<<<<< HEAD
                 `/api/v1/message/sendIndividualMessage/${recipientID}`,
-=======
-                `https://chat-app-1-h2m8.onrender.com/api/v1/message/sendIndividualMessage/${recipientID}`,
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
                 {
                     method: "POST",
                     headers: {

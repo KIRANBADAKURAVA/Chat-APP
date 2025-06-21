@@ -31,12 +31,7 @@ function Register() {
             if (profilePic) {
                 formData.append('profilePicture', profilePic);
             }
-<<<<<<< HEAD
             const response = await fetch('/api/v1/user/register', {
-=======
-
-            const response = await fetch('https://chat-app-1-h2m8.onrender.com/api/v1/user/register', {
->>>>>>> 9cc4ba5668c5bb371018008deb6c06c8f0a5464d
                 method: 'POST',
                 body: formData,
             });
