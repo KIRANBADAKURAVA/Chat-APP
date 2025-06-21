@@ -16,7 +16,7 @@ export default function Chats() {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch('https://chat-app-backend-ezj4.onrender.com/api/v1/chat/getallchats', {
+        const response = await fetch('/api/v1/chat/getallchats', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export default function Chats() {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
-        const response = await fetch('https://chat-app-backend-ezj4.onrender.com/api/v1/user/getuser', {
+        const response = await fetch('/api/v1/user/getuser', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -89,53 +89,60 @@ export default function Chats() {
   );
 
   return (
-    <div className="outer_box bg-white w-full h-full flex rounded-x shadow-md">
-      {/* Chat List Section */}
-      <div className="chat_box flex-[4] w-full h-full rounded-xl flex flex-col relative">
+    <div className="flex w-full h-full bg-transparent rounded-2xl shadow-lg overflow-hidden md:mt-2 md:mb-2 md:ml-0 md:mr-0">
+      {/* Left Panel: Chat List */}
+      <div className="hidden md:flex flex-col flex-[3] max-w-xs bg-white h-full border-r border-gray-200 relative">
         {/* Search Bar */}
-        <div className="flex items-center bg-purple-100 rounded-full px-4 py-2 w-full shadow-sm m-2">
-          <input
-            type="text"
-            placeholder="Search"
-            onChange={(e) => handleSearch(e.target.value)}
-            className="ml-2 bg-transparent outline-none text-gray-600 text-sm w-full"
-          />
-          <FiSearch className="text-gray-500 text-lg" />
+        <div className="sticky top-0 z-10 bg-white p-4 border-b border-gray-100">
+          <div className="flex items-center bg-gray-100 rounded-full px-3 py-2 shadow-sm">
+            <FiSearch className="text-gray-500 text-lg mr-2" />
+            <input
+              type="text"
+              placeholder="Search chats..."
+              onChange={(e) => handleSearch(e.target.value)}
+              className="bg-transparent outline-none text-gray-700 text-sm w-full"
+            />
+          </div>
         </div>
 
         {/* Group Box Toggle */}
         {groupbox ? (
           <GroupBox setGroupbox={setGroupbox} chat={chat} currentUserID={currentUserID} />
         ) : (
-          <div
+          <button
             onClick={() => setGroupbox(true)}
-            className="h-14 w-14  text-xl bg-blue-600 absolute bottom-4 right-4 rounded-md flex items-center justify-center text-white rounded-md font-bold cursor-pointer"
+            className="absolute bottom-6 right-6 h-12 w-12 flex items-center justify-center bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
+            title="Create Group Chat"
           >
-           <BsChatRightText />
-          </div>
+            <BsChatRightText size={24} />
+          </button>
         )}
 
         {/* Chat List */}
-        <div className="chat_list overflow-y-auto">
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {filteredChats.length > 0 ? (
             filteredChats.map((chatItem) => (
               <button
                 key={chatItem._id}
-                className="w-full text-left p-2 hover:bg-gray-100"
+                className="w-full text-left p-2 rounded-lg hover:bg-blue-50 transition flex items-center"
                 onClick={() => handleChatClick(chatItem)}
               >
                 <Userbox userdata={chatItem} />
               </button>
             ))
           ) : (
-            <p className="text-center text-gray-500">No chats available</p>
+            <p className="text-center text-gray-400 mt-8">No chats available</p>
           )}
         </div>
       </div>
 
-      {/* Messages Section */}
-      <div className="Message_box flex-[6] h-full rounded-r-xl p-4 bg-gray-50">
-     {messageBoxContent}
+      {/* Right Panel: Chat Area */}
+      <div className="flex-1 flex flex-col h-full bg-gray-50">
+        {/* Mobile Chat List Toggle (optional for future) */}
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col h-full">
+          {messageBoxContent}
+        </div>
       </div>
     </div>
   );

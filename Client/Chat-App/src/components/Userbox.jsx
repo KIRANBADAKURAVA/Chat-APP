@@ -1,42 +1,23 @@
-function Userbox({
-    userdata,
-    unseenmessages,
-  
+import React from "react";
 
-}){
-    const time = new Date(userdata.createdAt).toLocaleTimeString()
-
-  //console.log(time)
-    return(
-        <div className="flex items-center justify-between bg-gray-100 hover:bg-gray-400 p-4 m-1 rounded-lg shadow-sm w-full">
-
-        {/* Profile Icon */}
-        <div className="flex items-center">
-          <div className="flex items-center justify-center text-white font-bold text-xl w-12 h-12 rounded-md">
-          <img src={userdata.participants[0].profilePicture} alt="profile" className="w-12 h-12 rounded-full" />
-          </div>
-      
-          {/* Chat Details */}
-          <div className="ml-3 ">
-            <div className="text-gray-900 font-semibold">{userdata.groupChatName || userdata.participants[0].username}</div>
-            <div className="text-sm text-gray-500">
-             {userdata.latestMessage} 
-            </div>
-          </div>
-        </div>
-      
-        {/* Time and Actions */}
-        <div className="flex items-center space-x-3 ">
-          <div className="text-sm text-gray-400">{time}</div>
-      
-          {/* Notification Badge */}
-         
-      
-          
-          
-        </div>
+export default function Userbox({ userdata }) {
+  const { participants = [], isGroupChat, chatName } = userdata;
+  // For group chat, show group name; otherwise, show the other participant
+  const displayName = isGroupChat
+    ? chatName || "Group Chat"
+    : participants[0]?.username || "User";
+  return (
+    <div className="flex items-center space-x-3 p-2">
+      {/* Avatar Placeholder */}
+      <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-lg">
+        {displayName[0]?.toUpperCase()}
       </div>
-    )
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="font-medium text-gray-900 truncate">{displayName}</span>
+        {isGroupChat && (
+          <span className="text-xs text-gray-500 truncate">Group</span>
+        )}
+      </div>
+    </div>
+  );
 }
-
-export default Userbox

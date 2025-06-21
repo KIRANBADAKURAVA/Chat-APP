@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import Store from './store/store.js';
 import App from './App.jsx';
-import { Login, Register, Chats, AllUsers} from './index.jsx'
+import { Login, Register, Chats, AllUsers, Profile } from './index.jsx'
 
 
 const router = createBrowserRouter([
@@ -33,6 +33,10 @@ const router = createBrowserRouter([
         path: 'users',
         element: <AllUsers/>
 
+      },
+      {
+        path: 'profile',
+        element: <Profile/>
       }
     ]
 },

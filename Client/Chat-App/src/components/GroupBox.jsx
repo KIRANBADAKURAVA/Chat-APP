@@ -14,7 +14,7 @@ function GroupBox({ setGroupbox , currentUserID}) {
   useEffect(() => {
     async function getUsers() {
       try {
-        const response = await fetch('https://chat-app-backend-ezj4.onrender.com/api/v1/user/getallusers', {
+        const response = await fetch('/api/v1/user/getallusers', {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -71,7 +71,7 @@ function GroupBox({ setGroupbox , currentUserID}) {
 
           
       
-          const response = await fetch(`https://chat-app-backend-ezj4.onrender.com/api/v1/chat/creategroupchat`, {
+          const response = await fetch('/api/v1/chat/creategroupchat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ function GroupBox({ setGroupbox , currentUserID}) {
       
 
   return !groupchat ? (
-    <div className="group-box absolute top-0 left-2 p-6 bg-white w-full h-full rounded-lg shadow-lg flex flex-col">
+    <div className="group-box absolute inset-0 z-30 p-6 bg-white w-full h-full rounded-lg shadow-lg flex flex-col">
       <input
         type="text"
         placeholder="Enter Group Name"
@@ -126,7 +126,7 @@ function GroupBox({ setGroupbox , currentUserID}) {
       </div>
     </div>
   ) : (
-    <div className="group-box absolute top-0 left-2 p-6 bg-white w-full h-full rounded-lg shadow-lg flex flex-col">
+    <div className="group-box absolute inset-0 z-30 p-6 bg-white w-full h-full rounded-lg shadow-lg flex flex-col">
       <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 w-full shadow-sm mb-4">
         <input
           type="text"

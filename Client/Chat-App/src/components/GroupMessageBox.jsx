@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
 
-function GroupMessageBox({ currentUserID, chatId }) {
-    const [messageInput, setMessageInput] = useState("");
+export default function GroupMessageBox({ chatId, currentUserID }) {
     const [messages, setMessages] = useState([]);
+    const [messageInput, setMessageInput] = useState("");
+    const [chatName, setChatName] = useState("");
+    const messagesEndRef = useRef(null);
     const socketRef = useRef(null);
-    const [chat, setChat] = useState({});
-    const ENDPOINT = "https://chat-app-backend-ezj4.onrender.com";
+
+    const ENDPOINT = ""; // Not needed for proxy
 
     // Initialize socket connection
     useEffect(() => {
@@ -25,7 +27,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
     useEffect(() => {
         async function getChatDetails(chatId) {
             try {
-                const response = await fetch(`https://chat-app-backend-ezj4.onrender.com/api/v1/chat/getchatbyid/${chatId}`, {
+                const response = await fetch(`/api/v1/chat/getchatbyid/${chatId}`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -35,7 +37,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setChat(data.data);
+                    setChatName(data.data.chatName || "Group Chat");
                 } else {
                     console.error("Failed to fetch chat details:", response.statusText);
                 }
@@ -52,7 +54,7 @@ function GroupMessageBox({ currentUserID, chatId }) {
             const fetchMessages = async () => {
                 try {
                     const response = await fetch(
-                        `https://chat-app-backend-ezj4.onrender.com/api/v1/chat/getallmessages/${chatId}`,
+                        `/api/v1/chat/getallmessages/${chatId}`,
                         {
                             method: "GET",
                             headers: {
@@ -98,13 +100,19 @@ function GroupMessageBox({ currentUserID, chatId }) {
         };
     }, [chatId]);
 
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
+
     // Send message
     const sendMessage = async () => {
         if (!messageInput.trim()) return;
 
         try {
             const response = await fetch(
-                `https://chat-app-backend-ezj4.onrender.com/api/v1/message/sendGroupMessage/${chatId}`,
+                `/api/v1/message/sendGroupMessage/${chatId}`,
                 {
                     method: "POST",
                     headers: {
@@ -129,54 +137,63 @@ function GroupMessageBox({ currentUserID, chatId }) {
     };
 
     return (
-        <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
-            <div className="chat_header w-full p-6 bg-blue-600 text-white flex items-center px-4 rounded-t-lg">
-                <h2 className="text-xl font-semibold">{chat.groupChatName || "Group Chat"}</h2>
+        <div className="w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
+            {/* Sticky Group Chat Header */}
+            <div className="w-full p-4 bg-blue-600 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md">
+                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold mr-3">
+                    {chatName ? chatName[0]?.toUpperCase() : 'G'}
+                </div>
+                <h2 className="text-lg font-semibold truncate">{chatName || "Group Chat"}</h2>
             </div>
-            <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4">
+            {/* Scrollable Messages */}
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-2 bg-gray-100">
                 {messages.length > 0 ? (
                     messages.map((message) => {
                         const isCurrentUser = message.sender?._id === currentUserID || message.sender === currentUserID;
-                        const senderProfilePic = message.sender?.profilePic || "https://via.placeholder.com/40";
-
                         return (
                             <div
                                 key={message._id || Math.random()}
-                                className={`message_box flex ${isCurrentUser ? "flex-row-reverse" : "flex-row"} items-center w-full mb-4`}
+                                className={`flex items-end ${isCurrentUser ? "justify-end" : "justify-start"}`}
                             >
                                 {!isCurrentUser && (
-                                    <img
-                                        src={senderProfilePic}
-                                        alt="Profile"
-                                        className="w-10 h-10 rounded-full mr-3"
-                                    />
+                                    <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm">
+                                        {message.sender?.username ? message.sender.username[0]?.toUpperCase() : 'U'}
+                                    </div>
                                 )}
                                 <div
-                                    className={`message max-w-xs px-4 py-2 rounded-lg shadow-md ${
+                                    className={`max-w-xs px-4 py-2 rounded-2xl shadow-md text-sm break-words ${
                                         isCurrentUser
-                                            ? "bg-blue-500 text-white"
-                                            : "bg-gray-200 text-black"
+                                            ? "bg-blue-500 text-white rounded-br-none"
+                                            : "bg-white text-gray-900 rounded-bl-none"
                                     }`}
                                 >
                                     {message.content}
                                 </div>
+                                {isCurrentUser && (
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold ml-2 text-sm">
+                                        You
+                                    </div>
+                                )}
                             </div>
                         );
                     })
                 ) : (
-                    <p className="text-center text-gray-500">No messages available</p>
+                    <p className="text-center text-gray-400">No messages available</p>
                 )}
+                <div ref={messagesEndRef} />
             </div>
-            <div className="message_input_box w-full h-16 flex items-center bg-white border-t border-gray-300 px-4">
+            {/* Sticky Input */}
+            <div className="w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">
                 <input
                     type="text"
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
-                    className="message_input flex-grow h-10 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring focus:ring-blue-400"
+                    className="flex-grow h-10 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring focus:ring-blue-400"
                     placeholder="Type a message..."
+                    onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
                 />
                 <button
-                    className="message_send_button ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
+                    className="ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
                     onClick={sendMessage}
                 >
                     <FiSend />
@@ -185,5 +202,3 @@ function GroupMessageBox({ currentUserID, chatId }) {
         </div>
     );
 }
-
-export default GroupMessageBox;
