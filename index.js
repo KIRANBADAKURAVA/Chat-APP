@@ -21,7 +21,7 @@ connectDB()
         io.on("connection", (socket) => {
             console.log("New connection");
 
-            // Handle user setup
+            
             socket.on("setup", (userdata) => {
                 if (userdata && userdata._id) {
                     socket.join(userdata._id);
@@ -32,12 +32,10 @@ connectDB()
                 }
             });
 
-            // Handle disconnecting event
             socket.on("disconnecting", () => {
                 console.log("User disconnecting from rooms:", [...socket.rooms]);
             });
 
-            // Handle joining a chat room
             socket.on("join chat", (room) => {
                 if (room) {
                     socket.join(room);
@@ -47,12 +45,10 @@ connectDB()
                 }
             });
 
-            // Handle new message
             socket.on("new message", (message) => {
                 console.log("New message received:", message);
                 console.log("Type of message:", typeof message);
             
-                // Correctly access the `reciever` field inside the nested `message` object
                 const recievers = message?.message?.reciever;
             
                 if (Array.isArray(recievers)) {
@@ -68,7 +64,6 @@ connectDB()
             
         });
 
-        // Start the server
         httpServer.listen(process.env.PORT, () => {
             console.log(`Server is running on port ${process.env.PORT}`);
         });

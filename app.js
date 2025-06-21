@@ -31,7 +31,9 @@ app.use(express.static('public'))
 app.use(cookieParser())
 
 
-
+app.use('/test', (req, res)=>{
+    res.send('Hello World')
+})
 
 import UserRouter from './routes/User.routes.js'
 import MessageRouter from './routes/message.routes.js';
