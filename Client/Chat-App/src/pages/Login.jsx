@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { login as authLogin } from "../store/authSilce";
 import { FiLock } from "react-icons/fi";
+import logoImage from "../assets/Chat-App-logo-nobg.png";
 
 function Login() {
   const dispatch = useDispatch();
@@ -44,8 +45,15 @@ function Login() {
   return (
     <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-blue-50 to-white">
       <div className="mx-auto w-full max-w-md bg-white rounded-2xl p-8 md:p-10 shadow-lg flex flex-col items-center">
-        <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-          <FiLock className="text-blue-600" size={32} />
+        <div className="flex items-center justify-center w-20 h-20 mb-4">
+          <img 
+            src={logoImage} 
+            alt="Chat App Logo" 
+            className="w-full h-full object-contain"
+            style={{
+              transform: 'perspective(1000px) rotateY(5deg) rotateX(5deg)',
+            }}
+          />
         </div>
         <h2 className="text-center text-3xl font-extrabold text-blue-700 mb-2">Sign in</h2>
         <p className="mb-6 text-center text-base text-gray-500">

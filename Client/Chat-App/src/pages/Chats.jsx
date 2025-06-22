@@ -11,7 +11,7 @@ export default function Chats() {
   const [chatID, setChatID] = useState(null);
   const [groupbox, setGroupbox] = useState(false);
   const [isGroupChat, setIsGroupChat] = useState(false);
-
+  const [userProfilePic, setuserProfilePic] = useState('');
   // Fetch all chats
   useEffect(() => {
     const fetchChats = async () => {
@@ -54,6 +54,7 @@ export default function Chats() {
         if (response.ok) {
           const data = await response.json();
           setCurrentUserID(data.data._id);
+          setuserProfilePic(data.data.profilePicture);
         } else {
           console.error('Failed to fetch user:', response.statusText);
         }
@@ -85,7 +86,7 @@ export default function Chats() {
   const messageBoxContent = isGroupChat ? (
     <GroupMessageBox chatId={chatID} currentUserID={currentUserID} />
   ) : (
-    <ChatBox chatId={chatID} currentUserID={currentUserID} />
+    <ChatBox  userProfilePic= {userProfilePic} chatId={chatID} currentUserID={currentUserID} />
   );
 
   return (

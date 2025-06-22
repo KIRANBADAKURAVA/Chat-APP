@@ -2,20 +2,19 @@ import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
 
-function ChatBox({ currentUserID, chatId }) {
+function ChatBox({userProfilePic, currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
     const [recipientID, setRecipientID] = useState(null);
     const [recipientName, setRecipientName] = useState(""); 
     const [messages, setMessages] = useState([]);
     const socketRef = useRef(null);
     const [chatName, setChatName] = useState("");
-    const [chat , setChat] = useState({})
     const messagesEndRef = useRef(null);
     const [isTyping, setIsTyping] = useState(false);
     const typingTimeout = useRef(null);
-
+    const [profilePic, setProfilePic] = useState("");
     const ENDPOINT = ""; // Not needed for proxy
-
+    
     // Initialize socket connection
     useEffect(() => {
         socketRef.current = io(ENDPOINT, {
@@ -52,6 +51,7 @@ function ChatBox({ currentUserID, chatId }) {
                     setChatName(data.data.participants[0].username)
                     setRecipientID(data.data.participants[0]._id);
                     setRecipientName(data.data.participants[0].username);
+                    setProfilePic(data.data.participants[0].profilePicture );
 
                 } else {
                     console.error("Failed to fetch chat name:", response.statusText);
@@ -83,7 +83,6 @@ function ChatBox({ currentUserID, chatId }) {
                         const chatData = await chatResponse.json();
                         if (isMounted && chatData.data.length > 0) {
                             console.log("Chat data fetched:", chatData.data);
-                            const recID = chatData.data[0].reciever[0]._id;
                            
                             console.log(chatData.data[0].reciever[0].username);
                            
@@ -206,7 +205,7 @@ function ChatBox({ currentUserID, chatId }) {
             <div className="chat_header w-full p-4 bg-blue-600 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold mr-3">
                   {/* Avatar Placeholder */}
-                  {chatName ? chatName[0]?.toUpperCase() : 'C'}
+                 <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
                 </div>
                 <div className="flex flex-col">
                   <h2 className="text-lg font-semibold truncate">{ chatName || "Chat"}</h2>
@@ -225,7 +224,8 @@ function ChatBox({ currentUserID, chatId }) {
                                 {!isCurrentUser && (
                                   <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm">
                                     {/* Sender Avatar Placeholder */}
-                                    {recipientName ? recipientName[0]?.toUpperCase() : 'U'}
+                                  
+                                    <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
                                   </div>
                                 )}
                                 <div
@@ -240,7 +240,7 @@ function ChatBox({ currentUserID, chatId }) {
                                 {isCurrentUser && (
                                   <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold ml-2 text-sm">
                                     {/* User Avatar Placeholder */}
-                                    You
+                                    <img src={userProfilePic} alt="User Profile" className="w-full h-full rounded-full" />
                                   </div>
                                 )}
                             </div>

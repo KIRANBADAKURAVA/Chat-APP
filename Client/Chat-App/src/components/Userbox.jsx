@@ -6,11 +6,18 @@ export default function Userbox({ userdata }) {
   const displayName = isGroupChat
     ? chatName || "Group Chat"
     : participants[0]?.username || "User";
+
+    console.log("Userbox data:", participants[0].profilePicture);
   return (
     <div className="flex items-center space-x-3 p-2">
       {/* Avatar Placeholder */}
       <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-lg">
-        {displayName[0]?.toUpperCase()}
+        
+        <img
+          src={participants[0]?.profilePicture || ""}
+          alt="User Avatar"
+          className="w-full h-full rounded-full object-cover"
+        />
       </div>
       <div className="flex flex-col flex-1 min-w-0">
         <span className="font-medium text-gray-900 truncate">{displayName}</span>
