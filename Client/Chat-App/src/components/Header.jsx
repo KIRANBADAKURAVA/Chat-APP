@@ -1,4 +1,4 @@
-import React from "react";
+import React , {useRef, useEffect}from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiLogIn } from "react-icons/fi";
@@ -8,6 +8,7 @@ import { FaUsers } from "react-icons/fa";
 import { logout } from "../store/authSilce";
 import { useDispatch } from "react-redux";
 import logoImage from "../assets/Chat-App-logo-nobg.png";
+import { io } from "socket.io-client";
 
 const navIconSize = 24;
 
@@ -16,7 +17,10 @@ const Header = () => {
   const location = useLocation();
   const authStatus = useSelector((state) => state.auth.status);
   const username = useSelector(state => state.auth.data?.user?.loggedUser.username);
+  const userId = useSelector(state => state.auth.data?.user?.loggedUser._id);
   const dispatch = useDispatch();
+
+  
 
   const navItems = [
     {
@@ -45,12 +49,38 @@ const Header = () => {
     },
   ];
 
+
   const handleNavigate = (item) => {
     navigate(item.path);
   };
 
+
+  const ENDPOINT = ""; 
+
+  const socketRef = useRef(null);
+
+    useEffect(() => {
+      socketRef.current = io(ENDPOINT, {
+          transports: ["websocket"],
+          upgrade: false,
+      });
+
+    
+      return () => {
+          if (socketRef.current) {
+              socketRef.current.disconnect();
+
+          }
+      };
+  }, []);
+
   const logoutfn = (e) => {
     e.preventDefault();
+    console.log("Logging out user:", userId);
+    if (socketRef.current) {
+      console.log("Emitting set offline for user:", userId);
+      socketRef.current.emit("set offline", userId);
+    } 
     localStorage.clear();
     dispatch(logout());
     navigate("/");

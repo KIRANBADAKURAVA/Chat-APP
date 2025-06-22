@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
+import { use } from "react";
 
 function ChatBox({userProfilePic, currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
@@ -109,16 +110,8 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         }
     }, [recipientID, chatId]);
 
-    // Typing indicator logic
-    useEffect(() => {
-        if (!socketRef.current) return;
-        socketRef.current.on("typing", () => setIsTyping(true));
-        socketRef.current.on("stop typing", () => setIsTyping(false));
-        return () => {
-            socketRef.current.off("typing");
-            socketRef.current.off("stop typing");
-        };
-    }, []);
+    //Typing indicator logic
+    
 
     // Handle incoming messages
     useEffect(() => {
@@ -132,6 +125,24 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
             }
         });
 
+        socketRef.current.on("typing", (data) => {
+            console.log("Typing event received from:", data);
+           
+            setIsTyping(true);
+            clearTimeout(typingTimeout.current);
+            typingTimeout.current = setTimeout(() => {
+                setIsTyping(false);
+            }, 3000); 
+        });
+
+        socketRef.current.on("stop typing", (data) => {
+            if (data=== recipientID) {
+                console.log("Stop typing event received from:", data);
+                setIsTyping(false);
+                clearTimeout(typingTimeout.current);
+            }
+        });
+
         socketRef.current.on("connected", () => {
             console.log("Socket connected successfully");
         });
@@ -142,6 +153,8 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
 
         return () => {
             socketRef.current.off("message received");
+            socketRef.current.off("typing");
+            socketRef.current.off("stop typing");
             socketRef.current.off("connected");
             socketRef.current.off("error");
         };
@@ -191,13 +204,25 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
     // Typing event handlers
     const handleInputChange = (e) => {
         setMessageInput(e.target.value);
-        if (!socketRef.current) return;
-        socketRef.current.emit("typing", { to: recipientID });
-        if (typingTimeout.current) clearTimeout(typingTimeout.current);
+        
+        if (!socketRef.current || !recipientID) return;
+        
+        // Emit typing event
+        socketRef.current.emit("typing", recipientID );
+        
+        // Clear existing timeout
+        if (typingTimeout.current) {
+            clearTimeout(typingTimeout.current);
+        }
+        
+        // Set new timeout to stop typing
         typingTimeout.current = setTimeout(() => {
-            socketRef.current.emit("stop typing", { to: recipientID });
-        }, 1500);
+            socketRef.current.emit("stop typing", recipientID );
+        }, 1500); // Stop typing after 1.5 seconds of inactivity
     };
+
+
+
 
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
@@ -253,7 +278,14 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
             </div>
             {/* Typing Indicator */}
             {isTyping && (
-              <div className="px-6 py-2 text-blue-500 text-sm font-medium animate-pulse">{recipientName || 'here'} is typing…</div>
+              <div className="flex items-center px-6 py-2 text-blue-500 text-sm font-medium mb-1" style={{ minHeight: '28px' }}>
+                <span className="mr-2">{recipientName || 'Someone'} typing...</span>
+                <span className="flex space-x-1">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </span>
+              </div>
             )}
             {/* Sticky Input */}
             <div className="message_input_box w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">

@@ -17,6 +17,7 @@ connectDB()
             cors: {
                 origin: process.env.FRONTEND_URL,
                 methods: ["GET", "POST"],
+                upgrade: true,
             },
         });
 
@@ -28,13 +29,16 @@ connectDB()
                 if (userdata && userdata._id) {
                     users[userdata._id] = socket.id;
                     socket.userId = userdata._id;
+                    console.log("socket.userId", socket.userId);
                     console.log("User joined:", userdata._id);
                     socket.emit("connected");
+                   
+                    
                 } else {
                     console.error("Invalid user data:", userdata);
                 }
             });
-
+            
             socket.on("disconnect", () => {
                 if (socket.userId && users[socket.userId]) {
                     delete users[socket.userId];
@@ -83,7 +87,30 @@ connectDB()
                     socket.emit("error", { message: "Invalid receiver data or user offline", data: message });
                 }
             });
+
+            socket.on("typing", (receiver) => {
+                console.log("User is typing:",  "Receiver:", users[receiver]);
+                if(users[receiver]) {
+                    io.to(users[receiver]).emit("typing",receiver);
+                }
+            });
+            socket.on("stop typing", (receiver) => {
+                console.log("User stoped typing:",  "Receiver:",receiver);
+                if(users[receiver]) {
+                    io.to(users[receiver]).emit("stop typing", receiver);
+                }
+            });
+
+            socket.on("online", ()=>{
+                console.log("Online users requested");
+                io.emit("online list", Object.keys(users));
+            })
+            socket.on("offline", (userId)=>{
+                console.log("setting offline");
+                io.emit("set offline", userId);
+            })
             
+           
         });
 
         httpServer.listen(process.env.PORT, () => {
