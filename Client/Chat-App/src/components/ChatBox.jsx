@@ -12,7 +12,6 @@ function ChatBox({ currentUserID, chatId }) {
     const [chat , setChat] = useState({})
     const messagesEndRef = useRef(null);
     const [isTyping, setIsTyping] = useState(false);
-    const [lastSeen, setLastSeen] = useState(null); // Mocked for now
     const typingTimeout = useRef(null);
 
     const ENDPOINT = ""; // Not needed for proxy
@@ -23,10 +22,18 @@ function ChatBox({ currentUserID, chatId }) {
             transports: ["websocket"],
             upgrade: false,
         });
+
+        // Setup socket with current user ID
+        if (currentUserID) {
+            socketRef.current.emit("setup", { _id: currentUserID });
+        }
+
         return () => {
-            socketRef.current.disconnect();
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
         };
-    }, []);
+    }, [currentUserID]);
 
     // get chatname
     useEffect(() => {
@@ -41,9 +48,11 @@ function ChatBox({ currentUserID, chatId }) {
                 });
                 if (response.ok) {
                     const data = await response.json();
+                    console.log("Chat data fetched:", data.data.participants);
                     setChatName(data.data.participants[0].username)
-                    // Mock last seen: 2 minutes ago
-                    setLastSeen(Date.now() - 2 * 60 * 1000);
+                    setRecipientID(data.data.participants[0]._id);
+                    setRecipientName(data.data.participants[0].username);
+
                 } else {
                     console.error("Failed to fetch chat name:", response.statusText);
                 }
@@ -73,29 +82,12 @@ function ChatBox({ currentUserID, chatId }) {
                     if (chatResponse.ok) {
                         const chatData = await chatResponse.json();
                         if (isMounted && chatData.data.length > 0) {
+                            console.log("Chat data fetched:", chatData.data);
                             const recID = chatData.data[0].reciever[0]._id;
-                            setRecipientID(recID);
-                            setRecipientName(chatData.data[0].reciever[0].username);
+                           
+                            console.log(chatData.data[0].reciever[0].username);
+                           
                             setMessages(chatData.data);
-                            // Fetch real lastSeen for recipient
-                            try {
-                              const usersRes = await fetch('/api/v1/user/getallusers', {
-                                headers: { 'Content-Type': 'application/json' }
-                              });
-                              if (usersRes.ok) {
-                                const usersData = await usersRes.json();
-                                const found = usersData.data.find(u => u._id === recID);
-                                if (found && found.lastSeen) {
-                                  setLastSeen(new Date(found.lastSeen).getTime());
-                                } else {
-                                  setLastSeen(Date.now() - 2 * 60 * 1000); // fallback mock
-                                }
-                              } else {
-                                setLastSeen(Date.now() - 2 * 60 * 1000); // fallback mock
-                              }
-                            } catch {
-                              setLastSeen(Date.now() - 2 * 60 * 1000); // fallback mock
-                            }
                         }
                     } else {
                         console.error("Failed to fetch chat messages:", chatResponse.statusText);
@@ -113,11 +105,10 @@ function ChatBox({ currentUserID, chatId }) {
 
     // Join chat room when recipientID is set
     useEffect(() => {
-        if (recipientID) {
-            socketRef.current.emit("setup", { _id: recipientID });
-            socketRef.current.emit("join chat", recipientID);
+        if (recipientID && socketRef.current) {
+            socketRef.current.emit("join chat", chatId);
         }
-    }, [recipientID]);
+    }, [recipientID, chatId]);
 
     // Typing indicator logic
     useEffect(() => {
@@ -132,14 +123,28 @@ function ChatBox({ currentUserID, chatId }) {
 
     // Handle incoming messages
     useEffect(() => {
+        if (!socketRef.current) return;
+        
         socketRef.current.on("message received", (newMessage) => {
+            console.log("Message received:", newMessage);
             if (newMessage?.message) {
                 setMessages((prevMessages) => [...prevMessages, newMessage.message]);
                 setIsTyping(false); // Stop typing on new message
             }
         });
+
+        socketRef.current.on("connected", () => {
+            console.log("Socket connected successfully");
+        });
+
+        socketRef.current.on("error", (error) => {
+            console.error("Socket error:", error);
+        });
+
         return () => {
             socketRef.current.off("message received");
+            socketRef.current.off("connected");
+            socketRef.current.off("error");
         };
     }, [chatId]);
 
@@ -152,7 +157,7 @@ function ChatBox({ currentUserID, chatId }) {
 
     // send Messages
     const sendMessage = async () => {
-        if (!messageInput.trim()) return;
+        if (!messageInput.trim() || !recipientID) return;
         try {
             const response = await fetch(
                 `/api/v1/message/sendIndividualMessage/${recipientID}`,
@@ -167,7 +172,12 @@ function ChatBox({ currentUserID, chatId }) {
             );
             if (response.ok) {
                 const data = await response.json();
-                socketRef.current.emit("new message", { message: data.data.message });
+                // Emit message with correct structure
+                console.log('Message sent to ' + recipientID + ':', data.data.message);
+                socketRef.current.emit("new message", { 
+                    message: data.data.message, 
+                    reciever: recipientID 
+                });
                 setMessages((prevMessages) => [...prevMessages, data.data.message]);
                 setMessageInput("");
                 socketRef.current.emit("stop typing", { to: recipientID });
@@ -190,15 +200,6 @@ function ChatBox({ currentUserID, chatId }) {
         }, 1500);
     };
 
-    // Format last seen (mocked)
-    const getLastSeenText = () => {
-        if (!lastSeen) return null;
-        const diff = Math.floor((Date.now() - lastSeen) / 60000);
-        if (diff < 1) return "Online";
-        if (diff === 1) return "Last seen 1 minute ago";
-        return `Last seen ${diff} minutes ago`;
-    };
-
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             {/* Sticky Chat Header */}
@@ -209,7 +210,6 @@ function ChatBox({ currentUserID, chatId }) {
                 </div>
                 <div className="flex flex-col">
                   <h2 className="text-lg font-semibold truncate">{ chatName || "Chat"}</h2>
-                  <span className="text-xs text-blue-100 font-normal">{getLastSeenText()}</span>
                 </div>
             </div>
             {/* Scrollable Messages */}
@@ -253,7 +253,7 @@ function ChatBox({ currentUserID, chatId }) {
             </div>
             {/* Typing Indicator */}
             {isTyping && (
-              <div className="px-6 py-2 text-blue-500 text-sm font-medium animate-pulse">{recipientName || 'User'} is typing…</div>
+              <div className="px-6 py-2 text-blue-500 text-sm font-medium animate-pulse">{recipientName || 'here'} is typing…</div>
             )}
             {/* Sticky Input */}
             <div className="message_input_box w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">

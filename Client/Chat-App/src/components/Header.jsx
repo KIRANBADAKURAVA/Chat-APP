@@ -14,6 +14,7 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const authStatus = useSelector((state) => state.auth.status);
+  const username = useSelector(state => state.auth.data?.user?.loggedUser.username);
   const dispatch = useDispatch();
 
   const navItems = [
@@ -85,14 +86,19 @@ const Header = () => {
         )}
       </ul>
 
-      {/* Logout at the bottom */}
+      {/* User Info and Logout */}
       {authStatus && (
-        <button
-          onClick={logoutfn}
-          className="mb-8 w-10 md:w-32 py-2 md:px-2 flex flex-col md:flex-row items-center justify-center md:justify-start rounded-md bg-red-500 hover:bg-red-600 transition text-white shadow text-base font-semibold"
-        >
-          <span className="text-base md:mr-2">Logout</span>
-        </button>
+        <div className="mb-8 flex flex-col items-center">
+          <div className="text-center mb-4">
+            <span className="text-gray-800 font-semibold">{username}</span>
+          </div>
+          <button
+            onClick={logoutfn}
+            className="w-10 md:w-32 py-2 md:px-2 flex flex-col md:flex-row items-center justify-center md:justify-start rounded-md bg-red-500 hover:bg-red-600 transition text-white shadow text-base font-semibold"
+          >
+            <span className="text-base md:mr-2">Logout</span>
+          </button>
+        </div>
       )}
     </nav>
   );

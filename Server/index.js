@@ -3,13 +3,15 @@ import dotenv from "dotenv";
 import app from "./app.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { log } from "console";
+
 
 dotenv.config({ path: "./.env" });
 
 connectDB()
     .then(() => {
         const httpServer = createServer(app);
+
+        const users= {};
 
         const io = new Server(httpServer, {
             cors: {
@@ -19,12 +21,13 @@ connectDB()
         });
 
         io.on("connection", (socket) => {
-            console.log("New connection");
+             console.log("New connection" , socket.id);
 
             
             socket.on("setup", (userdata) => {
                 if (userdata && userdata._id) {
-                    socket.join(userdata._id);
+                    users[userdata._id] = socket.id;
+                    socket.userId = userdata._id;
                     console.log("User joined:", userdata._id);
                     socket.emit("connected");
                 } else {
@@ -32,8 +35,19 @@ connectDB()
                 }
             });
 
+            socket.on("disconnect", () => {
+                if (socket.userId && users[socket.userId]) {
+                    delete users[socket.userId];
+                    console.log("User disconnected:", socket.userId);
+                }
+            });
+
             socket.on("disconnecting", () => {
-                console.log("User disconnecting from rooms:", [...socket.rooms]);
+                // Clean up user from users object
+                if (socket.userId && users[socket.userId]) {
+                    delete users[socket.userId];
+                    console.log("User disconnecting:", socket.userId);
+                }
             });
 
             socket.on("join chat", (room) => {
@@ -46,19 +60,27 @@ connectDB()
             });
 
             socket.on("new message", (message) => {
-                console.log("New message received:", message);
-                console.log("Type of message:", typeof message);
-            
-                const recievers = message?.message?.reciever;
-            
+                 console.log("New message received:", message);
+                
+                const recievers = message?.reciever;
+                console.log("Receivers:", typeof recievers);
+                console.log("Users object:", users);
+                
                 if (Array.isArray(recievers)) {
                     recievers.forEach((reciever) => {
-                        console.log("Sending message to:", reciever);
-                        socket.to(reciever).emit("message received", message);
+                        if (users[reciever]) {
+                            console.log("Sending message to:", users[reciever]);
+                            io.to(users[reciever]).emit("message received", message);
+                        } else {
+                            console.log("User offline:", reciever);
+                        }
                     });
+                } else if(typeof recievers === 'string' && users[recievers]) {
+                    console.log("Sending message to single receiver:", users[recievers]);
+                    io.to(users[recievers]).emit("message received", message);
                 } else {
-                    console.error("Invalid receiver data:", recievers);
-                    socket.emit("error", { message: "Invalid receiver data", data: message });
+                    console.error("Invalid receiver data or user offline:", recievers);
+                    socket.emit("error", { message: "Invalid receiver data or user offline", data: message });
                 }
             });
             

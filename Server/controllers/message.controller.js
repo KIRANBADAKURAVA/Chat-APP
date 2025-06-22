@@ -50,7 +50,7 @@ const AddMessage = Asynchandler(async (req, res) => {
     });
 
     if (!newMessage) throw new ApiError(500, "Message not sent");
-    console.log(sender, receiverId);
+    // console.log(sender, receiverId);
     
 
     // Update participants' chat lists

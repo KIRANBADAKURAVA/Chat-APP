@@ -12,8 +12,6 @@ import mongoose from 'mongoose';
 const getChatbyId = Asynchandler(async (req, res) => {
   const chatId = req.params.chatId;
 
-  console.log(chatId)
-
   // Validate chatId
   if (!mongoose.Types.ObjectId.isValid(chatId)) {
       throw new ApiError(400, 'Invalid chat ID');
@@ -153,7 +151,7 @@ const createGroupChat = Asynchandler(async (req, res) => {
     });
 
     if (!group) throw new ApiError(500, 'Group chat not created');
-    console.log(group._id);
+    // console.log(group._id);
     
 
     // Add group ID to each participant's "chats"
@@ -163,13 +161,13 @@ const createGroupChat = Asynchandler(async (req, res) => {
             
             const user = await User.findById(userId);
             if (!user) {
-                console.log('user not found');
+                // console.log('user not found');
                 continue
             }; 
             
             
             user.chats.push(group._id);
-            console.log(user.chats);
+            // console.log(user.chats);
             await user.save(); 
         }
     } catch (error) {

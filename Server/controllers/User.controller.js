@@ -11,7 +11,7 @@ import { fileupload, filedelete } from "../utils/cloudinary.js";
 const UserRegistration= Asynchandler(async(req, res)=>{
 
     const {username, password} = req.body
-    console.log(req.body)
+    // console.log(req.body)
     if(!username|| !password) throw new ApiError(401, 'All fields are required' )
 
       const exsistingUser=  await User.findOne({
@@ -26,7 +26,7 @@ const UserRegistration= Asynchandler(async(req, res)=>{
         }
        
         const profilePictureupload= await fileupload(profilePicturepath)
-        //console.log('profilePictureupload', profilePictureupload)
+        // console.log('profilePictureupload', profilePictureupload)
         
        // if(!profilePictureupload) throw new ApiError(500, 'something went wrong while uploading profile picture')
         
@@ -44,13 +44,13 @@ const UserRegistration= Asynchandler(async(req, res)=>{
 
 //generate access token and refresh token
 const generateToken= async(username)=>{
-    //console.log('username', username)
+    // console.log('username', username)
     
     const exsistingUser=  await User.findOne({
         username 
     })
     if(!exsistingUser) throw new ApiError(400, ' User does not exists')
-        //console.log('exsistingUser', exsistingUser)
+        // console.log('exsistingUser', exsistingUser)
     const accesstoken= await exsistingUser.generateAccessToken()
     const refreshtoken=  await exsistingUser.generateRefreshToken()
 
@@ -76,7 +76,7 @@ const UserLogin= Asynchandler(async(req, res)=>{
     if(!isPasswordCorrect) throw new ApiError(400, 'Invalid credentials')
 
         const {accesstoken, refreshtoken}=  await generateToken(username);
-        //console.log('accesstoken', accesstoken)
+        // console.log('accesstoken', accesstoken)
         if(!accesstoken, !refreshtoken) throw new ApiError(500,' Something went wrong while generating tokens')
             
             const loggedUser = await User.findById(exsistingUser._id).select('-password ')
@@ -107,7 +107,7 @@ const UserLogin= Asynchandler(async(req, res)=>{
 
 //logout 
 const UserLogout = Asynchandler(async(req, res)=>{
-    console.log(req._id)
+    // console.log(req._id)
     const userId= req._id
 
     if(!userId) throw new ApiError(500, 'Something went wrong while extrating _id from access token')
@@ -146,7 +146,7 @@ const UpdateUserProfile= Asynchandler(async(req, res)=>{
         
 
     
-    console.log('profilePicturelocalpath', profilePicturelocalpath)
+    // console.log('profilePicturelocalpath', profilePicturelocalpath)
     const profilePictureupload= await fileupload(profilePicturelocalpath)
 
     if(!profilePictureupload) throw new ApiError(500, 'something went wrong while uploading profile picture')
@@ -230,7 +230,7 @@ const getAllUsers= Asynchandler(async(req, res)=>{
 
 const searchUser= Asynchandler(async(req, res)=>{
     const {username}= req.query
-    //console.log('username', username)
+    // console.log('username', username)
 
     const users= await User.find({
         username: {

@@ -12,7 +12,7 @@ const connectDB = async () => {
         dbName: "ChatApp", 
        
       });
-      console.log(`MongoDB Connected: ${connection.connection.host}`);
+      // console.log(`MongoDB Connected: ${connection.connection.host}`);
     } catch (error) {
       console.error(`Error: ${error.message}`);
       process.exit(1);

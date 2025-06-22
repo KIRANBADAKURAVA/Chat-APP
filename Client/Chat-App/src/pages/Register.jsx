@@ -31,6 +31,8 @@ function Register() {
             if (profilePic) {
                 formData.append('profilePicture', profilePic);
             }
+
+            console.log("Form Data:", formData);
             const response = await fetch('/api/v1/user/register', {
                 method: 'POST',
                 body: formData,
