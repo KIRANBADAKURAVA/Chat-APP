@@ -61,7 +61,7 @@ const Header = () => {
       {/* Logo at the top */}
       <div className="mt-8 mb-8">
         <Link to="/">
-          <div className="flex items-center justify-center w-20 h-20 hover:scale-110 transition-transform duration-300 transform rotate-3 hover:rotate-0">
+          <div className="flex items-center justify-center w-28 h-28 hover:scale-110 transition-transform duration-300 transform rotate-3 hover:rotate-0">
             <img 
               src={logoImage} 
               alt="Chat App Logo" 
