@@ -87,6 +87,12 @@ export default function Userbox({ userdata }) {
       </div>
       <div className="flex flex-col flex-1 min-w-0">
         <span className="font-medium text-gray-900 truncate">{displayName}</span>
+       {isOnline && (
+          <span className="text-xs text-green-500">Online</span>
+        )}
+        {!isOnline && (
+          <span className="text-xs text-gray-500">Offline</span>
+        )}
         {isGroupChat && (
           <span className="text-xs text-gray-500 truncate">Group</span>
         )}
