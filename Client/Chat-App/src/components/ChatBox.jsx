@@ -3,6 +3,51 @@ import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
 import { use } from "react";
 
+// E2EE Helper Functions
+async function importRSAPublicKey(spkiB64) {
+    const binaryDer = Uint8Array.from(atob(spkiB64), c => c.charCodeAt(0));
+    return await window.crypto.subtle.importKey(
+        "spki",
+        binaryDer,
+        { name: "RSA-OAEP", hash: "SHA-256" },
+        true,
+        ["encrypt"]
+    );
+}
+async function generateAESKey() {
+    return await window.crypto.subtle.generateKey(
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+    );
+}
+async function encryptMessageWithAES(aesKey, message) {
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(message);
+    const ciphertext = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        aesKey,
+        encoded
+    );
+    return { ciphertext, iv };
+}
+async function encryptAESKeyWithRSA(publicKey, aesKey) {
+    const rawAESKey = await window.crypto.subtle.exportKey("raw", aesKey);
+    return await window.crypto.subtle.encrypt(
+        { name: "RSA-OAEP" },
+        publicKey,
+        rawAESKey
+    );
+}
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+}
+
 function ChatBox({userProfilePic, currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
     const [recipientID, setRecipientID] = useState(null);
@@ -171,6 +216,35 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
     const sendMessage = async () => {
         if (!messageInput.trim() || !recipientID) return;
         try {
+            // 1. Fetch recipient's public key
+            const userRes = await fetch(`/api/v1/user/getallusers`, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const userList = await userRes.json();
+            console.log('All users:', userList.data.map(u => ({
+                id: u._id,
+                username: u.username,
+                hasPublicKey: !!u.publicKey
+            })));
+            
+            const recipient = userList.data.find(u => u._id === recipientID);
+            console.log('Selected recipient:', {
+                id: recipient?._id,
+                username: recipient?.username,
+                hasPublicKey: !!recipient?.publicKey
+            });
+            
+            if (!recipient || !recipient.publicKey) {
+                throw new Error('Recipient public key not found. They may need to re-register their account to enable encryption.');
+            }
+            const recipientPublicKey = await importRSAPublicKey(recipient.publicKey);
+            // 2. Generate AES key
+            const aesKey = await generateAESKey();
+            // 3. Encrypt message with AES
+            const { ciphertext, iv } = await encryptMessageWithAES(aesKey, messageInput);
+            // 4. Encrypt AES key with recipient's public RSA key
+            const encryptedAESKey = await encryptAESKeyWithRSA(recipientPublicKey, aesKey);
+            // 5. Send encrypted payload
             const response = await fetch(
                 `/api/v1/message/sendIndividualMessage/${recipientID}`,
                 {
@@ -179,13 +253,16 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
                     },
-                    body: JSON.stringify({ content: messageInput }),
+                    body: JSON.stringify({
+                        encryptedMessage: arrayBufferToBase64(ciphertext),
+                        encryptedAESKey: arrayBufferToBase64(encryptedAESKey),
+                        iv: arrayBufferToBase64(iv)
+                    }),
                 }
             );
             if (response.ok) {
                 const data = await response.json();
                 // Emit message with correct structure
-                console.log('Message sent to ' + recipientID + ':', data.data.message);
                 socketRef.current.emit("new message", { 
                     message: data.data.message, 
                     reciever: recipientID 

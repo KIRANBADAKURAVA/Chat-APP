@@ -9,37 +9,44 @@ import { fileupload, filedelete } from "../utils/cloudinary.js";
 
 // user registration
 const UserRegistration= Asynchandler(async(req, res)=>{
-
-    const {username, password} = req.body
+    const {username, password, publicKey} = req.body
     // console.log(req.body)
     if(!username|| !password) throw new ApiError(401, 'All fields are required' )
+    if(!publicKey) throw new ApiError(401, 'Public key is required for end-to-end encryption' )
 
-      const exsistingUser=  await User.findOne({
-            username 
-        })
+    const exsistingUser = await User.findOne({
+        username 
+    })
 
-        if(exsistingUser) throw new ApiError(400, ' User already exists')
-        
-            let profilePicturepath;
-        if(req.files && Array.isArray(req.files.profilePicture) && req.files.profilePicture.length>0){
-            profilePicturepath= req.files.profilePicture[0].path 
-        }
-       
-        const profilePictureupload= await fileupload(profilePicturepath)
-        // console.log('profilePictureupload', profilePictureupload)
-        
-       // if(!profilePictureupload) throw new ApiError(500, 'something went wrong while uploading profile picture')
-        
-            const newUser= await User.create({
-            username,
-            password,
-            profilePicture :profilePictureupload.url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'
-        })
+    if(exsistingUser) throw new ApiError(400, ' User already exists')
+    
+    let profilePicturepath;
+    if(req.files && Array.isArray(req.files.profilePicture) && req.files.profilePicture.length>0){
+        profilePicturepath= req.files.profilePicture[0].path 
+    }
+   
+    const profilePictureupload= await fileupload(profilePicturepath)
+    // console.log('profilePictureupload', profilePictureupload)
+    
+   // if(!profilePictureupload) throw new ApiError(500, 'something went wrong while uploading profile picture')
+    
+    const newUser= await User.create({
+        username,
+        password,
+        profilePicture: profilePictureupload?.url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+        publicKey
+    })
 
-        if(!newUser) throw new ApiError(500, 'something went wrong while creating new user')
-        
+    if(!newUser) throw new ApiError(500, 'something went wrong while creating new user')
+    
+    
+    // console.log('Created user:', {
+    //     username: newUser.username,
+    //     hasPublicKey: !!newUser.publicKey,
+    //     id: newUser._id
+    // });
 
-        return res.status(200).json(new ApiResponse(200, newUser, 'User Created successfully' ))
+    return res.status(200).json(new ApiResponse(200, newUser, 'User Created successfully' ))
 })
 
 //generate access token and refresh token
@@ -182,10 +189,9 @@ const UpdateUserProfile= Asynchandler(async(req, res)=>{
 // get user profile
 const currentUserProfile= Asynchandler(async(req, res)=>{
         const userId= req._id
-       // console.log(userId)
-        const   user = await    User.findById(userId).select('-password -refreshtoken')
+        const user = await User.findById(userId).select('-password -refreshtoken');
+        // publicKey is included by default, but ensure it's present
         if(!user) throw new ApiError(500, 'something went wrong while finding user profile')    
-
         return res.status(200).json(new ApiResponse(200, user, 'User profile fetched successfully' ))
 })
 
@@ -218,12 +224,9 @@ const updatePassword= Asynchandler(async(req, res)=>{
 // get all available users
 
 const getAllUsers= Asynchandler(async(req, res)=>{
-    const users= await User.find().select('-password -refreshtoken')
-
-    if(!users) throw new ApiError(500, 'something went wrong while fetching users')
-
+    const users= await User.find().select('-password -refreshtoken');
+    // publicKey is included by default, but ensure it's present
     return res.status(200).json(new ApiResponse(200, users, 'Users fetched successfully' ))
-
 })
 
 // Search user 

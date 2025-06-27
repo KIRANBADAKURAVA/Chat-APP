@@ -4,38 +4,6 @@ import { FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const MOCK_USERS = [
-  {
-    _id: 'mock1',
-    username: 'Alice',
-    profilePicture: 'https://randomuser.me/api/portraits/women/68.jpg',
-  },
-  {
-    _id: 'mock2',
-    username: 'Bob',
-    profilePicture: 'https://randomuser.me/api/portraits/men/65.jpg',
-  },
-  {
-    _id: 'mock3',
-    username: 'Charlie',
-    profilePicture: 'https://randomuser.me/api/portraits/men/32.jpg',
-  },
-  {
-    _id: 'mock4',
-    username: 'Diana',
-    profilePicture: 'https://randomuser.me/api/portraits/women/44.jpg',
-  },
-  {
-    _id: 'mock5',
-    username: 'Eve',
-    profilePicture: 'https://randomuser.me/api/portraits/women/12.jpg',
-  },
-  {
-    _id: 'mock6',
-    username: 'Frank',
-    profilePicture: 'https://randomuser.me/api/portraits/men/23.jpg',
-  },
-];
 
 function AllUsers() {
   const [user, setUser] = useState([]);
@@ -52,12 +20,11 @@ function AllUsers() {
         });
         if (response.ok) {
           const data = await response.json();
-          setUser(data.data && data.data.length > 0 ? data.data : MOCK_USERS);
-        } else {
-          setUser(MOCK_USERS);
-        }
+          setUser(data.data );
+        } 
       } catch (error) {
-        setUser(MOCK_USERS);
+        console.error('Error fetching users:', error.message);
+        
       }
     }
     getUsers();
@@ -95,12 +62,14 @@ function AllUsers() {
       });
       if (response.ok) {
         const data = await response.json();
-        setUser(data.data && data.data.length > 0 ? data.data : MOCK_USERS);
+        setUser( data.data );
       } else {
-        setUser(MOCK_USERS);
+        console.error('Failed to search users:', response.statusText);
+        setUser([]);
       }
     } catch (error) {
-      setUser(MOCK_USERS);
+      console.error('Error searching users:', error.message);
+      setUser([]);
     }
   };
 

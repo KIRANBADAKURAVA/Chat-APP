@@ -6,6 +6,33 @@ import { Link } from 'react-router-dom';
 import { FiUserPlus } from 'react-icons/fi';
 import logoImage from '../assets/Chat-App-logo-nobg.png';
 
+// Helper functions for RSA key generation and export
+async function generateRSAKeyPair() {
+    const keyPair = await window.crypto.subtle.generateKey(
+        {
+            name: "RSA-OAEP",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1]),
+            hash: "SHA-256",
+        },
+        true,
+        ["encrypt", "decrypt"]
+    );
+    // Export keys to store/send
+    const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+    const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+    return { publicKey, privateKey };
+}
+
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+}
+
 function Register() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -26,20 +53,35 @@ function Register() {
     const registerUser = async (data) => {
         setLoading(true);
         try {
+            // Generate RSA key pair
+            const { publicKey, privateKey } = await generateRSAKeyPair();
+            // Store private key in localStorage
+            localStorage.setItem('rsa_private_key', arrayBufferToBase64(privateKey));
+            // Prepare public key as base64
+            const publicKeyBase64 = arrayBufferToBase64(publicKey);
+
+            // Create form data with all fields
             const formData = new FormData();
             formData.append('username', data.username);
             formData.append('password', data.password);
+            formData.append('publicKey', publicKeyBase64);
             if (profilePic) {
                 formData.append('profilePicture', profilePic);
             }
 
-            console.log("Form Data:", formData);
+            // Log the form data for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value.substring ? value.substring(0, 50) + '...' : value}`);
+            }
+
             const response = await fetch('/api/v1/user/register', {
                 method: 'POST',
                 body: formData,
             });
+
             if (!response.ok) {
-                throw new Error('Registration failed. Please try again.');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Registration failed. Please try again.');
             }
             const regData = await response.json();
             if (regData.success) {
@@ -51,6 +93,7 @@ function Register() {
                 setLoading(false);
             }
         } catch (err) {
+            console.error('Registration error:', err);
             setError(err.message || "An error occurred during registration.");
             setLoading(false);
         }
