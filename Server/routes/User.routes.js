@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { UserLogin, UserLogout, UserRegistration,
 UpdateUserProfile,currentUserProfile, updatePassword , 
-getAllUsers, searchUser} from "../controllers/User.controller.js";
+getAllUsers, searchUser } from "../controllers/User.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import verifyToken from "../middlewares/auth.middleware.js";
 

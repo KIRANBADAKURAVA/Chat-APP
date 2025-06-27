@@ -24,7 +24,8 @@
     "nodemon": "^3.1.10",
     "npm": "^10.9.2",
     "react-icons": "^5.4.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "prettier": "^3.4.2"

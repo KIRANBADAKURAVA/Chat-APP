@@ -47,13 +47,10 @@ async function urlToFile(url, filename) {
 }
 
 async function registerDummyUser(user) {
-  const { publicKey, privateKey } = await generateRSAKeyPair();
-  const publicKeyBase64 = arrayBufferToBase64(publicKey);
+  // Only send username, password, and profilePicture
   const formData = new FormData();
   formData.append('username', user.username);
   formData.append('password', user.password);
-  formData.append('publicKey', publicKeyBase64);
-  // Send profile picture as URL string (not as a file)
   formData.append('profilePicture', user.profilePicture);
   // Optionally, add a 'name' field if your backend supports it
   // formData.append('name', user.name);

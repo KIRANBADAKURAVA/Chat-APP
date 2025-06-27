@@ -8,7 +8,6 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     const [chatName, setChatName] = useState("");
     const messagesEndRef = useRef(null);
     const socketRef = useRef(null);
-
     const ENDPOINT = ""; // Not needed for proxy
 
     // Initialize socket connection
@@ -109,7 +108,6 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     // Send message
     const sendMessage = async () => {
         if (!messageInput.trim()) return;
-
         try {
             const response = await fetch(
                 `/api/v1/message/sendGroupMessage/${chatId}`,
@@ -122,17 +120,19 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                     body: JSON.stringify({ content: messageInput }),
                 }
             );
-
             if (response.ok) {
                 const data = await response.json();
                 socketRef.current.emit("new message", { message: data.data.message });
-                setMessages((prevMessages) => [...prevMessages, data.data]);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    data.data.message
+                ]);
                 setMessageInput("");
             } else {
                 console.error("Failed to send message:", response.statusText);
             }
         } catch (error) {
-            console.error("Error sending message:", error.message);
+            console.error("Error sending group message:", error.message);
         }
     };
 

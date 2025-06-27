@@ -9,15 +9,10 @@ import { fileupload, filedelete } from "../utils/cloudinary.js";
 
 // user registration
 const UserRegistration= Asynchandler(async(req, res)=>{
-    const {username, password, publicKey} = req.body
-    // console.log(req.body)
+    const {username, password} = req.body
     if(!username|| !password) throw new ApiError(401, 'All fields are required' )
-    if(!publicKey) throw new ApiError(401, 'Public key is required for end-to-end encryption' )
-
-    const exsistingUser = await User.findOne({
-        username 
-    })
-
+    
+    const exsistingUser = await User.findOne({ username })
     if(exsistingUser) throw new ApiError(400, ' User already exists')
     
     let profilePicturepath;
@@ -26,7 +21,6 @@ const UserRegistration= Asynchandler(async(req, res)=>{
     }
    
     const profilePictureupload= await fileupload(profilePicturepath)
-    // console.log('profilePictureupload', profilePictureupload)
     
    // if(!profilePictureupload) throw new ApiError(500, 'something went wrong while uploading profile picture')
     
@@ -34,7 +28,6 @@ const UserRegistration= Asynchandler(async(req, res)=>{
         username,
         password,
         profilePicture: profilePictureupload?.url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
-        publicKey
     })
 
     if(!newUser) throw new ApiError(500, 'something went wrong while creating new user')
@@ -247,7 +240,6 @@ const searchUser= Asynchandler(async(req, res)=>{
     return res.status(200).json(new ApiResponse(200, users, 'Users fetched successfully' ))
 
 })
-
 
 export {
     UserRegistration,
