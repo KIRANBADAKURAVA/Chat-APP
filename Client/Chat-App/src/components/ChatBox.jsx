@@ -240,35 +240,47 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
             {/* Scrollable Messages */}
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4 flex flex-col space-y-2">
                 {messages.length > 0 ? (
-                    messages.map((message) => {
+                    messages.map((message, idx) => {
                         let isCurrentUser = (message.sender?._id === currentUserID || message.sender === currentUserID);
+                        // Format timestamp
+                        let timeString = '';
+                        if (message.createdAt) {
+                            const date = new Date(message.createdAt);
+                            timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
+                        // Show avatar only if previous message is from a different sender
+                        const showAvatar = !isCurrentUser && (idx === 0 || (messages[idx-1]?.sender?._id !== message.sender?._id && messages[idx-1]?.sender !== message.sender));
+                        // Add extra margin if previous message is from a different sender
+                        const extraMargin = idx === 0 || (messages[idx-1]?.sender?._id !== message.sender?._id && messages[idx-1]?.sender !== message.sender) ? 'mt-4' : 'mt-1';
                         return (
                             <div
                                 key={message._id || Math.random()}
-                                className={`flex items-end ${isCurrentUser ? "justify-end" : "justify-start"}`}
+                                className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} w-full ${extraMargin}`}
                             >
-                                {!isCurrentUser && (
-                                  <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm">
-                                    {/* Sender Avatar Placeholder */}
-                                  
-                                    <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
-                                  </div>
+                                {/* Avatar for received messages */}
+                                {!isCurrentUser && showAvatar && (
+                                    <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm self-end">
+                                        <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
+                                    </div>
                                 )}
-                                <div
-                                    className={`max-w-xs px-4 py-2 rounded-2xl shadow-md text-sm break-words ${
-                                        isCurrentUser
-                                            ? "bg-blue-500 text-white rounded-br-none"
-                                            : "bg-white text-gray-900 rounded-bl-none"
-                                    }`}
-                                >
-                                    {message.content}
+                                <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                                    <div
+                                        className={`relative px-4 py-2 rounded-3xl shadow-lg text-sm break-words whitespace-pre-line ${
+                                            isCurrentUser
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-200 text-gray-900 border border-gray-200'
+                                        }`}
+                                        style={{ wordBreak: 'break-word', minWidth: '60px' }}
+                                    >
+                                        <span className="block pr-10 mr-3">{message.content}</span>
+                                        {/* Timestamp inside bubble, bottom-right, lighter and with padding */}
+                                        {timeString && (
+                                            <span className="absolute bottom-1 right-2 text-[10px] text-gray-400 font-medium select-none" style={{letterSpacing: '0.5px', paddingRight: '2px'}}>{timeString}</span>
+                                        )}
+                                    </div>
                                 </div>
-                                {isCurrentUser && (
-                                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold ml-2 text-sm">
-                                    {/* User Avatar Placeholder */}
-                                    <img src={userProfilePic} alt="User Profile" className="w-full h-full rounded-full" />
-                                  </div>
-                                )}
+                                {/* Avatar for sent messages (optional, usually not shown in WhatsApp) */}
+                                {/* {isCurrentUser && ...} */}
                             </div>
                         );
                     })
