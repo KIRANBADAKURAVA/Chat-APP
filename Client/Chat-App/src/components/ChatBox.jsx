@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import io from "socket.io-client";
-import { FiSend } from "react-icons/fi";
-import { use } from "react";
-import { v4 as uuidv4 } from 'uuid';
+import { FiSend, FiCornerUpLeft } from "react-icons/fi";
 
 function ChatBox({userProfilePic, currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
@@ -16,6 +14,9 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
     const typingTimeout = useRef(null);
     const [profilePic, setProfilePic] = useState("");
     const ENDPOINT = ""; // Not needed for proxy
+    const [replyToMessage, setReplyToMessage] = useState(null);
+    const [highlightedMsgId, setHighlightedMsgId] = useState(null);
+    const messageRefs = useRef({});
 
     // Initialize socket connection
     useEffect(() => {
@@ -55,6 +56,8 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                     setRecipientName(data.data.participants[0].username);
                     setProfilePic(data.data.participants[0].profilePicture );
 
+                    console.log("userId:", data.data.participants[0]._id);
+
                 } else {
                     console.error("Failed to fetch chat name:", response.statusText);
                 }
@@ -65,42 +68,37 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         getChatName(chatId);
     }, [chatId]);
 
-    // Fetch chat messages and set recipient ID
+    // Move fetchMessages to top-level so it can be called from sendMessage
+    const fetchMessages = async () => {
+        try {
+            console.log("Fetching messages for chatId:", chatId);
+            const chatResponse = await fetch(
+                `/api/v1/chat/getallmessages/${chatId}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
+                    },
+                }
+            );
+            if (chatResponse.ok) {
+                const chatData = await chatResponse.json();
+                if (chatData.data.length > 0) {
+                    setMessages(chatData.data);
+                }
+            } else {
+                console.error("Failed to fetch chat messages:", chatResponse.statusText);
+            }
+        } catch (error) {
+            console.error("Error fetching chat messages:", error.message);
+        }
+    };
+
+    // Update useEffect to use fetchMessages
     useEffect(() => {
         if (chatId) {
-            let isMounted = true;
-            const fetchMessages = async () => {
-                try {
-                    const chatResponse = await fetch(
-                        `/api/v1/chat/getallmessages/${chatId}`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
-                            },
-                        }
-                    );
-                    if (chatResponse.ok) {
-                        const chatData = await chatResponse.json();
-                        if (isMounted && chatData.data.length > 0) {
-                            console.log("Chat data fetched:", chatData.data);
-                           
-                            console.log(chatData.data[0].reciever[0].username);
-                           
-                            setMessages(chatData.data);
-                        }
-                    } else {
-                        console.error("Failed to fetch chat messages:", chatResponse.statusText);
-                    }
-                } catch (error) {
-                    console.error("Error fetching chat messages:", error.message);
-                }
-            };
             fetchMessages();
-            return () => {
-                isMounted = false;
-            };
         }
     }, [chatId]);
 
@@ -109,7 +107,7 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         if (recipientID && socketRef.current) {
             socketRef.current.emit("join chat", chatId);
         }
-    }, [recipientID, chatId]);
+    }, [recipientID, chatId,replyToMessage ]);
 
     //Typing indicator logic
     
@@ -121,7 +119,7 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         socketRef.current.on("message received", (newMessage) => {
             console.log("Message received:", newMessage);
             if (newMessage?.message) {
-                setMessages((prevMessages) => [...prevMessages, newMessage.message]);
+                addMessage(newMessage.message);
                 setIsTyping(false); // Stop typing on new message
             }
         });
@@ -168,34 +166,49 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         }
     }, [messages]);
 
+    // Add useEffect to reset replyToMessage and messageInput on chatId change
+    useEffect(() => {
+        setReplyToMessage(null);
+        setMessageInput("");
+    }, [chatId]);
+
+    // Deduplicate messages by _id
+    const addMessage = (newMsg) => {
+        setMessages((prev) => {
+            if (!newMsg || !newMsg._id) return prev;
+            if (prev.some((m) => m._id === newMsg._id)) return prev;
+            return [...prev, newMsg];
+        });
+    };
+
     // send Messages
     const sendMessage = async () => {
         if (!messageInput.trim() || !recipientID) return;
         try {
-            const response = await fetch(
-                `/api/v1/message/sendIndividualMessage/${recipientID}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
-                    },
-                    body: JSON.stringify({
-                        content: messageInput
-                    }),
-                }
-            );
+            let url = `/api/v1/message/sendIndividualMessage/${recipientID}`;
+            let body = { content: messageInput };
+            if (replyToMessage) {
+                url = `/api/v1/message/replyMessage/${chatId}`;
+                body.replyTo = replyToMessage._id;
+            }
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
+                },
+                body: JSON.stringify(body),
+            });
             if (response.ok) {
                 const data = await response.json();
                 socketRef.current.emit("new message", { 
-                    message: data.data.message, 
+                    message: data.data.message || data.data, 
                     reciever: recipientID 
                 });
-                setMessages((prevMessages) => [
-                    ...prevMessages,
-                    data.data.message
-                ]);
+                // Instead of addMessage, refetch all messages to get populated repliedTo
+                fetchMessages();
                 setMessageInput("");
+                setReplyToMessage(null);
                 socketRef.current.emit("stop typing", { to: recipientID });
             } else {
                 console.error("Failed to send message:", response.statusText);
@@ -225,6 +238,15 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         }, 1500); // Stop typing after 1.5 seconds of inactivity
     };
 
+    const handleReplyPreviewClick = useCallback((replyToId) => {
+      const ref = messageRefs.current[replyToId];
+      if (ref) {
+        ref.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedMsgId(replyToId);
+        setTimeout(() => setHighlightedMsgId(null), 1200);
+      }
+    }, []);
+
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             {/* Sticky Chat Header */}
@@ -252,10 +274,17 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                         const showAvatar = !isCurrentUser && (idx === 0 || (messages[idx-1]?.sender?._id !== message.sender?._id && messages[idx-1]?.sender !== message.sender));
                         // Add extra margin if previous message is from a different sender
                         const extraMargin = idx === 0 || (messages[idx-1]?.sender?._id !== message.sender?._id && messages[idx-1]?.sender !== message.sender) ? 'mt-4' : 'mt-1';
+                        // Only show reply icon on hover or for received messages
+                        const showReplyIcon = !isCurrentUser;
+                        // Assign ref for scroll-to-original
+                        const msgId = message._id;
                         return (
                             <div
-                                key={message._id || Math.random()}
-                                className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} w-full ${extraMargin}`}
+                                key={msgId}
+                                ref={el => { if (msgId) messageRefs.current[msgId] = el; }}
+                                className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} w-full ${extraMargin} ${highlightedMsgId === msgId ? 'bg-yellow-100 transition-colors duration-500' : ''}`}
+                                onMouseEnter={() => setHighlightedMsgId(msgId)}
+                                onMouseLeave={() => setHighlightedMsgId(null)}
                             >
                                 {/* Avatar for received messages */}
                                 {!isCurrentUser && showAvatar && (
@@ -264,23 +293,45 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                                     </div>
                                 )}
                                 <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                                    {/* Show replied-to message preview if present */}
+                                    {message.repliedTo && message.repliedTo[0] && (
+                                        <div
+                                            className={`flex flex-col px-2 py-1 mb-1 rounded-lg cursor-pointer transition-colors duration-150 ${
+                                                isCurrentUser ? 'border-l-4 border-green-400 bg-green-50 hover:bg-green-100' : 'border-l-4 border-blue-400 bg-blue-50 hover:bg-blue-100'
+                                            }`}
+                                            onClick={() => handleReplyPreviewClick(message.repliedTo[0]._id)}
+                                            title="Go to original message"
+                                        >
+                                            {message.repliedTo[0].sender?.username && (
+                                                <span className="text-xs font-semibold text-gray-700">
+                                                    {message.repliedTo[0].sender.username}
+                                                </span>
+                                            )}
+                                            <span className="text-xs text-gray-600 whitespace-pre-line line-clamp-2">{message.repliedTo[0].content}</span>
+                                        </div>
+                                    )}
                                     <div
-                                        className={`relative px-4 py-2 rounded-3xl shadow-lg text-sm break-words whitespace-pre-line ${
+                                        className={`relative px-4 py-2 rounded-3xl shadow-lg text-sm break-words whitespace-pre-line group ${
                                             isCurrentUser
                                                 ? 'bg-blue-600 text-white'
                                                 : 'bg-gray-200 text-gray-900 border border-gray-200'
                                         }`}
                                         style={{ wordBreak: 'break-word', minWidth: '60px' }}
                                     >
-                                        <span className="block pr-10 mr-3">{message.content}</span>
+                                        <span className="block pr-10 mr-3">{message.content || '[No content]'}</span>
                                         {/* Timestamp inside bubble, bottom-right, lighter and with padding */}
                                         {timeString && (
                                             <span className="absolute bottom-1 right-2 text-[10px] text-gray-400 font-medium select-none" style={{letterSpacing: '0.5px', paddingRight: '2px'}}>{timeString}</span>
                                         )}
+                                        {/* Reply icon - show on hover for all messages */}
+                                        <FiCornerUpLeft
+                                            className="absolute left-[-28px] top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                            size={18}
+                                            title="Reply"
+                                            onClick={() => setReplyToMessage(message)}
+                                        />
                                     </div>
                                 </div>
-                                {/* Avatar for sent messages (optional, usually not shown in WhatsApp) */}
-                                {/* {isCurrentUser && ...} */}
                             </div>
                         );
                     })
@@ -301,21 +352,37 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
               </div>
             )}
             {/* Sticky Input */}
-            <div className="message_input_box w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">
+            <div className="message_input_box w-full flex flex-col bg-white border-t border-gray-200 px-4 pt-2 pb-2 sticky bottom-0 z-10">
+              {replyToMessage && (
+                <div className="flex items-center mb-2 px-3 py-2 bg-gray-50 border-l-4 border-blue-500 rounded-r-lg shadow-sm max-w-[80%]">
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-xs font-semibold text-gray-700">Replying to {replyToMessage.sender?.username || 'Unknown'}</span>
+                    <span className="text-xs text-gray-600 whitespace-pre-line line-clamp-2">{replyToMessage.content || '[No content]'}</span>
+                  </div>
+                  <button 
+                    onClick={() => setReplyToMessage(null)} 
+                    className="ml-2 text-xs text-red-400 hover:text-red-600 font-bold transition-colors duration-150"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              <div className="w-full flex items-center">
                 <input
-                    type="text"
-                    value={messageInput}
-                    onChange={handleInputChange}
-                    className="flex-grow h-10 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring focus:ring-blue-400"
-                    placeholder="Type a message..."
-                    onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
+                  type="text"
+                  value={messageInput}
+                  onChange={handleInputChange}
+                  className="flex-grow h-10 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring focus:ring-blue-400"
+                  placeholder="Type a message..."
+                  onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
                 />
                 <button
-                    className="ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
-                    onClick={sendMessage}
+                  className="ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
+                  onClick={sendMessage}
                 >
-                    <FiSend />
+                  <FiSend />
                 </button>
+              </div>
             </div>
         </div>
     );

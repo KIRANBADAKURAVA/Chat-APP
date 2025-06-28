@@ -16,10 +16,10 @@ const messageSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Chat',
     },
-    replies: [{
+    repliedTo: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Message',
-    }],
+    },
     seen: {
         type: Boolean,
         default: false,

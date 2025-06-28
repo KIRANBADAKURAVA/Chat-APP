@@ -253,6 +253,7 @@ const getAllMessages = Asynchandler(async (req, res) => {
                 foreignField: '_id',
                 as: 'messages',
                 pipeline: [
+                    // sender details
                     {
                         $lookup: {
                             from: 'users',
@@ -269,27 +270,30 @@ const getAllMessages = Asynchandler(async (req, res) => {
                             ],
                         },
                     },
+
                     {
                         $lookup: {
-                            from: 'users',
-                            localField: 'reciever',
+                            from: 'messages',
+                            localField: 'repliedTo',
                             foreignField: '_id',
-                            as: 'reciever',
-                            pipeline: [
-                                {
-                                    $project: {
-                                        username: 1,
-                                        profilePicture: 1,
-                                    },
+                            as : 'repliedTo',
+                            pipeline : [
+                               { 
+                                $project: {
+                                    content: 1,
+                                    createdAt: 1,
+                                    }
                                 },
-                            ],
-                        },
+                            ]
+                            
+                        }
                     }
+                    
                 ],
             },
         },
     ]);
-    //console.log(AllMessages);
+    //console.log(AllMessages[0].messages[0]);
    
     const filterdparticipants = AllMessages.map((chat) => {
         return {

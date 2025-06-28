@@ -113,6 +113,54 @@ const AddGroupMessage = Asynchandler(async (req, res) => {
 } 
 );
 
+// reply a message 
+const replyMessage = Asynchandler(async(req,res)=>{
+  console.log("reply message called");
+
+  const {content, replyTo} = req.body;
+  console.log(content, replyTo);
+  const sender = req.user._id;
+  const chatId = req.params.chatId;
+
+  if(!content) throw new ApiError(400, "Message content is required");
+  if(!replyTo) throw new ApiError(400, "Reply to message ID is required");
+
+  // retrieve the chat
+  const chat = await Chat.findById(chatId);
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  // Verify the message being replied to exists and belongs to this chat
+  const originalMessage = await Message.findById(replyTo);
+  if (!originalMessage) throw new ApiError(404, "Original message not found");
+  if (originalMessage.chat.toString() !== chatId) throw new ApiError(400, "Cannot reply to message from different chat");
+
+  // create the reply message
+  const replyMessage = await Message.create({
+    chat: chatId,
+    sender,
+    content,
+    repliedTo: replyTo // Use 'repliedTo' to match the model
+  });
+
+  console.log("Reply message created:", replyMessage);
+
+  if(!replyMessage) throw new ApiError(500, "Reply message not sent");
+  
+  // update the chat with the new message
+  chat.messages.push(replyMessage._id);
+  chat.latestMessage = content;
+  await chat.save();
+  
+  // Populate the replied-to message for the response
+  const populatedReply = await Message.findById(replyMessage._id).populate('repliedTo');
+  
+  // return the reply message
+  return res.status(201).json(
+    new ApiResponse(201, populatedReply, "Reply message sent successfully")
+  );
+})
 
 
-export { AddMessage, AddGroupMessage };
+
+
+export { AddMessage, AddGroupMessage, replyMessage };
