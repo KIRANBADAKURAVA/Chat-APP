@@ -3,35 +3,11 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { FiUserPlus } from 'react-icons/fi';
 import logoImage from '../assets/Chat-App-logo-nobg.png';
+import { generateKeyPair, storeKeyPair } from '../EncryptionUtils/EncryptKeys.utils';
 
-// Helper functions for RSA key generation and export
-async function generateRSAKeyPair() {
-    const keyPair = await window.crypto.subtle.generateKey(
-        {
-            name: "RSA-OAEP",
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([1, 0, 1]),
-            hash: "SHA-256",
-        },
-        true,
-        ["encrypt", "decrypt"]
-    );
-    // Export keys to store/send
-    const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-    const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    return { publicKey, privateKey };
-}
 
-function arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-}
+// Remove generateRSAKeyPair and arrayBufferToBase64 helper functions
 
 function Register() {
     const navigate = useNavigate();
@@ -53,22 +29,19 @@ function Register() {
     const registerUser = async (data) => {
         setLoading(true);
         try {
-            // Generate RSA key pair
-            const { publicKey, privateKey } = await generateRSAKeyPair();
-            // Store private key in localStorage
-            localStorage.setItem('rsa_private_key', arrayBufferToBase64(privateKey));
-            // Prepare public key as base64
-            const publicKeyBase64 = arrayBufferToBase64(publicKey);
-
-            // Create form data with all fields
+            // Create form data with all fields (no encryption logic)
             const formData = new FormData();
             formData.append('username', data.username);
             formData.append('password', data.password);
-            formData.append('publicKey', publicKeyBase64);
             if (profilePic) {
                 formData.append('profilePicture', profilePic);
             }
-
+            // Key pair generation
+            const keyPair = await generateKeyPair();
+            await storeKeyPair(keyPair);
+            const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+            formData.append('publicKey', publicKey);
+            
             // Log the form data for debugging
             for (let [key, value] of formData.entries()) {
                 console.log(`${key}: ${value.substring ? value.substring(0, 50) + '...' : value}`);

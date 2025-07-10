@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
+ 
 
 function ChatBox({userProfilePic, currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
@@ -109,7 +110,6 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         }
     }, [recipientID, chatId]);
 
-    //Typing indicator logic
     
 
     // Handle incoming messages

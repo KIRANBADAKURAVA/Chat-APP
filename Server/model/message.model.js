@@ -26,6 +26,11 @@ const messageSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    encryptedKeys: {
+        type: Map,
+        of: String,
+        required: true,
+    }
 },
 {
     timestamps: true,
