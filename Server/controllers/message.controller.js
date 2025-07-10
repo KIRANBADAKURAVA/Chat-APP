@@ -9,8 +9,9 @@ import User from "../model/user.model.js"; // Assuming User model is defined
 const AddMessage = Asynchandler(async (req, res) => {
   try {
     const senderId = req.user._id;
-    const sender = senderId.toString()
+   
     const receiverId = req.params.userId;
+    console.log(receiverId);
     //console.log(sender);
     
     const { content } = req.body;
@@ -22,18 +23,19 @@ const AddMessage = Asynchandler(async (req, res) => {
 
     // Create or find chat
     let chat = await Chat.findOne({
-      participants: { $all: [sender, [receiverId]] },
+      participants: { $all: [senderId, receiverId] },
       isGroupChat: false,
       
     });
 
     if (!chat) {
       chat = await Chat.create({
-        participants: [sender, [receiverId]],
+        participants: [senderId, receiverId],
         isGroupChat: false,
         latestMessage: content,
       });
     } else {
+      console.log("chat found");
       chat.latestMessage = content;
       await chat.save();
     }
@@ -44,7 +46,7 @@ const AddMessage = Asynchandler(async (req, res) => {
     // Create message
     const newMessage = await Message.create({
       chat: chat._id,
-      sender,
+      sender: senderId  ,
       reciever: [receiverId],
       content,
     });

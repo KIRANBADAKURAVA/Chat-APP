@@ -11,6 +11,8 @@ import mongoose from 'mongoose';
 
 const getChatbyId = Asynchandler(async (req, res) => {
   const chatId = req.params.chatId;
+  console.log(chatId);
+
 
   // Validate chatId
   if (!mongoose.Types.ObjectId.isValid(chatId)) {
