@@ -7,19 +7,26 @@ import User from "../model/user.model.js"; // Assuming User model is defined
 
 // create a new individual message
 const AddMessage = Asynchandler(async (req, res) => {
+  const {encryptedMessage, encryptedAESKeyForRecipient, encryptedAESKeyForSender, iv} = req.body;
+  console.log("req.body", req.body);
   try {
     const senderId = req.user._id;
    
     const receiverId = req.params.userId;
-    console.log(receiverId);
-    //console.log(sender);
     
-    const { content } = req.body;
-    //console.log(content);
+
+    if(!encryptedMessage || !encryptedAESKeyForRecipient || !encryptedAESKeyForSender || !iv) {
+      throw new ApiError(400, "Message content and keys are required");
+    }
+    
+    const content = encryptedMessage
+
     if(!content) throw new ApiError(400, "Message content is required");
-    // Fetch recipient user
+    
+
     const recipientUser = await User.findById(receiverId);
     if (!recipientUser) throw new ApiError(404, "Recipient user not found");
+
 
     // Create or find chat
     let chat = await Chat.findOne({
@@ -43,18 +50,24 @@ const AddMessage = Asynchandler(async (req, res) => {
 
     if (!chat) throw new ApiError(500, "Chat not created");
 
+    const encryptedKeys = new Map();
+
+    encryptedKeys.set(receiverId, encryptedAESKeyForRecipient);
+    encryptedKeys.set(senderId, encryptedAESKeyForSender);
+
     // Create message
     const newMessage = await Message.create({
       chat: chat._id,
-      sender: senderId  ,
-      reciever: [receiverId],
+      sender: senderId,
       content,
+      encryptedKeys,
+      iv: iv,
     });
 
     if (!newMessage) throw new ApiError(500, "Message not sent");
     // console.log(sender, receiverId);
     
-
+    console.log("newMessage", newMessage);
     // Update participants' chat lists
    if(!req.user.chats.includes(chat._id)) {
         req.user.chats.push(chat._id);
@@ -68,8 +81,8 @@ const AddMessage = Asynchandler(async (req, res) => {
         recipientUser.chats.push(chat._id); 
         await recipientUser.save();
         }
-         chat.messages.push(newMessage._id);
-        await chat.save();
+        // Removed chat.messages.push since messages array is no longer stored in Chat
+        // Messages are queried separately using the chat field
 
     return res.status(201).json(
       new ApiResponse(201, {
@@ -89,25 +102,21 @@ const AddGroupMessage = Asynchandler(async (req, res) => {
   const sender = req.user._id;
   const { content } = req.body;
 
-  const groupChat = await Chat.findById(chatId );
+  const groupChat = await Chat.findById(chatId);
   if (!groupChat) throw new ApiError(404, "Group chat not found");
   groupChat.latestMessage = content;
   await groupChat.save();
-  const recievers = groupChat.participants.filter((participant) => participant.toString() !== sender.toString());
+  
   const newMessage = await Message.create({
     chat: chatId,
     sender,
-    reciever: recievers,
     content,
   });
 
   if (!newMessage) throw new ApiError(500, "Message not sent");
 
-  groupChat.messages.push(newMessage._id);
-  await groupChat.save();
-
-  
-
+  // Removed groupChat.messages.push since messages array is no longer stored in Chat
+  // Messages are queried separately using the chat field
 
   return res.status(201).json(  
     new ApiResponse(201, newMessage, "Message sent successfully")

@@ -27,13 +27,11 @@ const UserSchema = new mongoose.Schema({
             ref: 'Chat',
         }
     ],
-    isOnline: { 
-        type: Boolean,
-        default: false,
-    },
+  
     publicKey: {
         type: String,
-        required: false,
+        required: true,
+        unique: true,
     },
 },
 {

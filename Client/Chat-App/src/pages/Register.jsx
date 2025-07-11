@@ -39,8 +39,21 @@ function Register() {
             // Key pair generation
             const keyPair = await generateKeyPair();
             await storeKeyPair(keyPair);
-            const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);
-            formData.append('publicKey', publicKey);
+            const publicKeyBuffer = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+            
+            // Convert ArrayBuffer to base64 string
+            const arrayBufferToBase64 = (buffer) => {
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                for (let i = 0; i < bytes.byteLength; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return window.btoa(binary);
+            };
+            
+            const publicKeyBase64 = arrayBufferToBase64(publicKeyBuffer);
+            console.log('Public Key (base64):', publicKeyBase64.substring(0, 50) + '...');
+            formData.append('publicKey', publicKeyBase64);
             
             // Log the form data for debugging
             for (let [key, value] of formData.entries()) {

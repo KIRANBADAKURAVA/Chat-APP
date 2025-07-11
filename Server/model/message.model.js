@@ -7,13 +7,6 @@ const messageSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
-    reciever: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true,
-        }
-    ],
     content: {
         type: String,
         required: true,
@@ -21,6 +14,7 @@ const messageSchema = new mongoose.Schema({
     chat: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Chat',
+        required: true, // Make chat required since we rely on it
     },
     seen: {
         type: Boolean,
@@ -30,11 +24,19 @@ const messageSchema = new mongoose.Schema({
         type: Map,
         of: String,
         required: true,
-    }
+    },
+    iv: {
+        type: String,
+        required: true,
+    },
 },
 {
     timestamps: true,
 });
+
+// Add index for better query performance
+messageSchema.index({ chat: 1, createdAt: 1 });
+messageSchema.index({ sender: 1 });
 
 const Message = mongoose.model('Message', messageSchema);
 

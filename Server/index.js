@@ -64,28 +64,28 @@ connectDB()
                 }
             });
 
-            socket.on("new message", (message) => {
-                 console.log("New message received:", message);
+            socket.on("new message", async (message) => {
+                console.log("New message received:", message);
                 
-                const recievers = message?.reciever;
-                console.log("Receivers:", typeof recievers);
-                console.log("Users object:", users);
-                
-                if (Array.isArray(recievers)) {
-                    recievers.forEach((reciever) => {
-                        if (users[reciever]) {
-                            console.log("Sending message to:", users[reciever]);
-                            io.to(users[reciever]).emit("message received", message);
+                try {
+                    // Get recipients from chat participants instead of message.receiver
+                    const { getMessageRecipients } = await import('./utils/messageUtils.js');
+                    const recipients = await getMessageRecipients(message.chat, message.sender);
+                    
+                    console.log("Recipients from chat:", recipients);
+                    console.log("Users object:", users);
+                    
+                    recipients.forEach((recipient) => {
+                        if (users[recipient]) {
+                            console.log("Sending message to:", users[recipient]);
+                            io.to(users[recipient]).emit("message received", message);
                         } else {
-                            console.log("User offline:", reciever);
+                            console.log("User offline:", recipient);
                         }
                     });
-                } else if(typeof recievers === 'string' && users[recievers]) {
-                    console.log("Sending message to single receiver:", users[recievers]);
-                    io.to(users[recievers]).emit("message received", message);
-                } else {
-                    console.error("Invalid receiver data or user offline:", recievers);
-                    socket.emit("error", { message: "Invalid receiver data or user offline", data: message });
+                } catch (error) {
+                    console.error("Error getting recipients:", error);
+                    socket.emit("error", { message: "Error getting recipients", data: message });
                 }
             });
 

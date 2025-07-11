@@ -1,4 +1,5 @@
 import Chat from "../model/chat.model.js";
+import Message from "../model/message.model.js";
 import { Asynchandler } from "../utils/Asynchandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -237,84 +238,36 @@ const removeParticipant = Asynchandler(async (req, res) => {
 // get all messages in a chat
 const getAllMessages = Asynchandler(async (req, res) => {
     const {chatId} = req.params;
+    const { page = 1, limit = 50 } = req.query; // Default 50 messages per page
 
     const chat = await Chat.findById(chatId);
     if(!chat) throw new ApiError(404, 'Chat not found');
     if(!chat.participants.includes(req.user._id) ) throw new ApiError(403, 'You are not a participant in this chat');
 
-    const AllMessages= await Chat.aggregate([
-        {
-            $match: {
-                _id: new mongoose.Types.ObjectId(chatId),
-            },
-        },
-        {
-            $lookup: {
-                from: 'messages',
-                localField: 'messages',
-                foreignField: '_id',
-                as: 'messages',
-                pipeline: [
-                    {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'sender',
-                            foreignField: '_id',
-                            as: 'sender',
-                            pipeline: [
-                                {
-                                    $project: {
-                                        username: 1,
-                                        profilePicture: 1,
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'reciever',
-                            foreignField: '_id',
-                            as: 'reciever',
-                            pipeline: [
-                                {
-                                    $project: {
-                                        username: 1,
-                                        profilePicture: 1,
-                                    },
-                                },
-                            ],
-                        },
-                    }
-                ],
-            },
-        },
-    ]);
-    //console.log(AllMessages);
-   
-    const filterdparticipants = AllMessages.map((chat) => {
-        return {
-            ...chat,
-            participants: chat.participants.filter(
-                (participant) => {
-                    return participant._id.toString() !== req.user._id.toString();
-                }
-            ),
-        };
-    });
+    // Calculate skip value for pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    //console.log(filterdparticipants[0].messages[0]);
-    const messages = filterdparticipants[0].messages.map((message) => {
-      message.sender = message.sender[0];
+    // Query messages directly from Message collection using chat field
+    const messages = await Message.find({ chat: chatId })
+        .populate('sender', 'username profilePicture')
+        .sort({ createdAt: -1 }) // Sort by creation time (newest first for pagination)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(); // Use lean() for better performance
 
-      return message;
-    }
-    );
+    // Get total count for pagination info
+    const totalMessages = await Message.countDocuments({ chat: chatId });
 
-    //console.log(messages);
-    return res.status(200).json(new ApiResponse(200, messages, 'All messages in chat fetched successfully'));
-    
+    return res.status(200).json(new ApiResponse(200, {
+        messages: messages.reverse(), // Reverse to get chronological order
+        pagination: {
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(totalMessages / parseInt(limit)),
+            totalMessages,
+            hasNextPage: skip + messages.length < totalMessages,
+            hasPrevPage: parseInt(page) > 1
+        }
+    }, 'All messages in chat fetched successfully'));
 })
 
 

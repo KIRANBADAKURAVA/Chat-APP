@@ -20,12 +20,7 @@ const chatSchema = new mongoose.Schema({
     groupChatName: {
         type: String,
     },
-    messages: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Message',
-        }
-    ],
+   
 },
 {
     timestamps: true,

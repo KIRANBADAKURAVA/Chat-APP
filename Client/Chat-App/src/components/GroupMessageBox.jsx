@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
+import { sendEncryptedGroupMessage } from '../utils/messageUtils';
 
 export default function GroupMessageBox({ chatId, currentUserID }) {
     const [messages, setMessages] = useState([]);
@@ -66,7 +67,7 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
 
                     if (response.ok) {
                         const data = await response.json();
-                        setMessages(data.data);
+                        setMessages(data.data.messages);
                     } else {
                         console.error("Failed to fetch messages:", response.statusText);
                     }
@@ -109,28 +110,10 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     // Send message
     const sendMessage = async () => {
         if (!messageInput.trim()) return;
-
         try {
-            const response = await fetch(
-                `/api/v1/message/sendGroupMessage/${chatId}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
-                    },
-                    body: JSON.stringify({ content: messageInput }),
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                socketRef.current.emit("new message", { message: data.data.message });
-                setMessages((prevMessages) => [...prevMessages, data.data]);
-                setMessageInput("");
-            } else {
-                console.error("Failed to send message:", response.statusText);
-            }
+            const data = await sendEncryptedGroupMessage(chatId, messageInput, currentUserID, socketRef);
+            setMessages((prevMessages) => [...prevMessages, data.data]);
+            setMessageInput("");
         } catch (error) {
             console.error("Error sending message:", error.message);
         }

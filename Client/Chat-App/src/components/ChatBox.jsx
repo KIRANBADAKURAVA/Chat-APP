@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
+import { sendEncryptedIndividualMessage, stopTyping, startTyping } from '../utils/messageUtils';
  
 
 function ChatBox({userProfilePic, currentUserID, chatId }) {
@@ -82,12 +83,9 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                     );
                     if (chatResponse.ok) {
                         const chatData = await chatResponse.json();
-                        if (isMounted && chatData.data.length > 0) {
-                            console.log("Chat data fetched:", chatData.data);
-                           
-                            console.log(chatData.data[0].reciever[0].username);
-                           
-                            setMessages(chatData.data);
+                        if (isMounted && chatData.data.messages) {
+                            console.log("Chat data fetched:", chatData.data.messages);
+                            setMessages(chatData.data.messages);
                         }
                     } else {
                         console.error("Failed to fetch chat messages:", chatResponse.statusText);
@@ -170,32 +168,10 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
     const sendMessage = async () => {
         if (!messageInput.trim() || !recipientID) return;
         try {
-            const response = await fetch(
-                `/api/v1/message/sendIndividualMessage/${recipientID}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("accesstoken")}`,
-                    },
-                    body: JSON.stringify({
-                        content: messageInput
-                    }),
-                }
-            );
-            if (response.ok) {
-                const data = await response.json();
-                // Emit message with correct structure
-                socketRef.current.emit("new message", { 
-                    message: data.data.message, 
-                    reciever: recipientID 
-                });
-                setMessages((prevMessages) => [...prevMessages, data.data.message]);
-                setMessageInput("");
-                socketRef.current.emit("stop typing", { to: recipientID });
-            } else {
-                console.error("Failed to send message:", response.statusText);
-            }
+            const data = await sendEncryptedIndividualMessage(recipientID, messageInput, currentUserID, socketRef);
+            setMessages((prevMessages) => [...prevMessages, data.data.message]);
+            setMessageInput("");
+            stopTyping(recipientID, socketRef);
         } catch (error) {
             console.error("Error sending message:", error.message);
         }
@@ -207,8 +183,8 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         
         if (!socketRef.current || !recipientID) return;
         
-        // Emit typing event
-        socketRef.current.emit("typing", recipientID );
+        // Start typing indicator
+        startTyping(recipientID, socketRef);
         
         // Clear existing timeout
         if (typingTimeout.current) {
@@ -217,7 +193,7 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         
         // Set new timeout to stop typing
         typingTimeout.current = setTimeout(() => {
-            socketRef.current.emit("stop typing", recipientID );
+            stopTyping(recipientID, socketRef);
         }, 1500); // Stop typing after 1.5 seconds of inactivity
     };
 

@@ -3,6 +3,7 @@ import { FiSearch } from 'react-icons/fi';
 import { FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { sendGreetingMessage } from '../utils/messageUtils';
 
 
 function AllUsers() {
@@ -10,6 +11,7 @@ function AllUsers() {
   const [hoveredUserId, setHoveredUserId] = useState(null);
   const navigate = useNavigate();
   const authStatus = useSelector((state) => state.auth.status);
+  const currentUserID = useSelector(state => state.auth.data?.user?.loggedUser?._id);
 
   useEffect(() => {
     async function getUsers() {
@@ -35,20 +37,40 @@ function AllUsers() {
       navigate('/login');
       return;
     }
-    try {
-      const response = await fetch('/api/v1/message/sendIndividualMessage/' + user._id, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + localStorage.getItem('accesstoken'),
-        },
-        body: JSON.stringify({ content: 'Hi ' + user.username }),
-      });
-      if (response.ok) {
-        navigate('/all-chats');
-      } else {
-        console.error('Failed to create chat:', response.statusText);
+    
+    console.log('Current user ID from Redux:', currentUserID);
+    console.log('Recipient user:', user);
+    
+    // If currentUserID is not available from Redux, try to get it from the server
+    let userId = currentUserID;
+    if (!userId) {
+      try {
+        const response = await fetch('/api/v1/user/getuser', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('accesstoken')}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          userId = data.data._id;
+          console.log('Current user ID from server:', userId);
+        }
+      } catch (error) {
+        console.error('Failed to get current user from server:', error);
+        return;
       }
+    }
+    
+    if (!userId) {
+      console.error('Current user ID is still undefined');
+      return;
+    }
+    
+    try {
+      await sendGreetingMessage(user, userId);
+      navigate('/all-chats');
     } catch (error) {
       console.error('Error creating chat:', error.message);
     }

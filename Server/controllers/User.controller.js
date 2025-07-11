@@ -10,13 +10,17 @@ import { fileupload, filedelete } from "../utils/cloudinary.js";
 // user registration
 const UserRegistration= Asynchandler(async(req, res)=>{
     const {username, password, publicKey} = req.body
-    // console.log(req.body)
+    console.log(req.body)
     if(!username|| !password) throw new ApiError(401, 'All fields are required' )
     if(!publicKey) throw new ApiError(401, 'Public key is required for end-to-end encryption' )
-
+    
+    const isPublicKeyValid = /^[A-Za-z0-9+/=]+$/.test(publicKey);
+    if(!isPublicKeyValid) throw new ApiError(400, 'Invalid public key format. Please provide a valid base64 encoded public key.')
     const exsistingUser = await User.findOne({
-        username 
+        username
     })
+   
+
 
     if(exsistingUser) throw new ApiError(400, ' User already exists')
     
@@ -249,6 +253,25 @@ const searchUser= Asynchandler(async(req, res)=>{
 })
 
 
+// Get PublicKey of a user
+
+const getPublicKey = Asynchandler(async(req, res)=>{
+    const {userId} = req.params;
+    console.log('userId', userId);
+    if(!userId) throw new ApiError(400, 'userId is required to fetch public key');
+
+    const user = await User.findOne({
+        _id: userId
+    }).select('publicKey');
+
+    if(!user) throw new ApiError(404, 'User not found');
+    console.log('Public key', user.publicKey);
+    return res.status(200).json(
+        new ApiResponse(200, {publicKey: user.publicKey}, 'Public key fetched successfully')
+    );
+}
+);
+
 export {
     UserRegistration,
     UserLogin,
@@ -257,7 +280,8 @@ export {
     currentUserProfile,
     updatePassword,
     getAllUsers,
-    searchUser
+    searchUser,
+    getPublicKey
 }
 
 

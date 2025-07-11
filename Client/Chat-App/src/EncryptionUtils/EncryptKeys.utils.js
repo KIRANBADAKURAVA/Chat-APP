@@ -1,7 +1,4 @@
-// utils for encryption 
-
-/* 
-1. Generate Key Pair
+/* 1. Generate Key Pair
 2. store private key in indexedDB
 3. Register user with public key
 4. Encrypt message with AES
@@ -25,7 +22,6 @@ const generateKeyPair = async()=> {
         )
         return keyPair;
     } catch (error) {
-        console.log("Error generating key pair:", error);
         console.error("Error generating key pair:", error);
         throw error;
     }
@@ -52,7 +48,7 @@ request.onsuccess = function (event) {
 
   // Step 3: Store a key 
   
-  store.put(userPrivateKey, 'my-private-key');
+  store.put(keyPair, 'my-private-key');
 
   tx.oncomplete = () => console.log('Key stored successfully');
   tx.onerror = () => console.error('Transaction failed');
@@ -60,11 +56,66 @@ request.onsuccess = function (event) {
 
 }
 
+// retrive reciepient public key 
 
-export {generateKeyPair, storeKeyPair};
+const getRecipientPublicKey = async (userId) => {
+    try{
+        const response = await fetch(`/api/v1/user/publicKey/${userId}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch recipient public key');
+        }
+
+        const data = await response.json();
+        const base64PublicKey = data.data.publicKey;
+        
+        // Convert base64 string to ArrayBuffer
+        const binaryString = window.atob(base64PublicKey);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Import the public key as a CryptoKey
+        const publicKey = await crypto.subtle.importKey(
+            "spki",
+            bytes,
+            {
+                name: "RSA-OAEP",
+                hash: "SHA-256",
+            },
+            true,
+            ["encrypt"]
+        );
+        
+        return publicKey;
+
+    }
+    catch(error) {
+        console.error("Error retrieving recipient's public key:", error);
+        throw error;
+}
+
+}
+
+// Generate AES key for message encryption
+const generateAESKey = async () => {
+    try {
+        const key = await crypto.subtle.generateKey(
+            {
+                name: "AES-GCM",
+                length: 256,
+            },
+            true, 
+            ["encrypt", "decrypt"] 
+        );
+        return key;
+    } catch (error) {
+        console.error("Error generating AES key:", error);
+        throw error;
+    }
+}
 
 
 
 
-
-
+export {generateKeyPair, storeKeyPair, generateAESKey, getRecipientPublicKey};
