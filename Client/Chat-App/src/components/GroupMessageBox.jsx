@@ -112,8 +112,8 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
         if (!messageInput.trim()) return;
         try {
             const data = await sendEncryptedGroupMessage(chatId, messageInput, currentUserID, socketRef);
-            setMessages((prevMessages) => [...prevMessages, data.data]);
-            setMessageInput("");
+                setMessages((prevMessages) => [...prevMessages, data.data]);
+                setMessageInput("");
         } catch (error) {
             console.error("Error sending message:", error.message);
         }

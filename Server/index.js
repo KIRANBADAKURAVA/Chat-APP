@@ -65,7 +65,7 @@ connectDB()
             });
 
             socket.on("new message", async (message) => {
-                console.log("New message received:", message);
+                 console.log("New message received:", message);
                 
                 try {
                     // Get recipients from chat participants instead of message.receiver
@@ -73,8 +73,8 @@ connectDB()
                     const recipients = await getMessageRecipients(message.chat, message.sender);
                     
                     console.log("Recipients from chat:", recipients);
-                    console.log("Users object:", users);
-                    
+                console.log("Users object:", users);
+                
                     recipients.forEach((recipient) => {
                         if (users[recipient]) {
                             console.log("Sending message to:", users[recipient]);

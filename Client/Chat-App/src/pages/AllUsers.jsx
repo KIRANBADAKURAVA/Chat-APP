@@ -44,15 +44,15 @@ function AllUsers() {
     // If currentUserID is not available from Redux, try to get it from the server
     let userId = currentUserID;
     if (!userId) {
-      try {
+    try {
         const response = await fetch('/api/v1/user/getuser', {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
+        headers: {
+          'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('accesstoken')}`,
-          },
-        });
-        if (response.ok) {
+        },
+      });
+      if (response.ok) {
           const data = await response.json();
           userId = data.data._id;
           console.log('Current user ID from server:', userId);

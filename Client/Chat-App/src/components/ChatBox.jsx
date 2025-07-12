@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import { FiSend } from "react-icons/fi";
 import { sendEncryptedIndividualMessage, stopTyping, startTyping } from '../utils/messageUtils';
- 
+import { decryptMessage } from '../EncryptionUtils/Decrypt.utils.js'
 
 function ChatBox({userProfilePic, currentUserID, chatId }) {
     const [messageInput, setMessageInput] = useState("");
@@ -16,6 +16,7 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
     const typingTimeout = useRef(null);
     const [profilePic, setProfilePic] = useState("");
     const ENDPOINT = ""; // Not needed for proxy
+    const [decryptedMessages, setDecryptedMessages] = useState([]);
     
     // Initialize socket connection
     useEffect(() => {
@@ -49,7 +50,6 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Chat data fetched:", data.data.participants);
                     setChatName(data.data.participants[0].username)
                     setRecipientID(data.data.participants[0]._id);
                     setRecipientName(data.data.participants[0].username);
@@ -84,7 +84,6 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                     if (chatResponse.ok) {
                         const chatData = await chatResponse.json();
                         if (isMounted && chatData.data.messages) {
-                            console.log("Chat data fetched:", chatData.data.messages);
                             setMessages(chatData.data.messages);
                         }
                     } else {
@@ -108,14 +107,11 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         }
     }, [recipientID, chatId]);
 
-    
-
     // Handle incoming messages
     useEffect(() => {
         if (!socketRef.current) return;
         
         socketRef.current.on("message received", (newMessage) => {
-            console.log("Message received:", newMessage);
             if (newMessage?.message) {
                 setMessages((prevMessages) => [...prevMessages, newMessage.message]);
                 setIsTyping(false); // Stop typing on new message
@@ -123,8 +119,6 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         });
 
         socketRef.current.on("typing", (data) => {
-            console.log("Typing event received from:", data);
-           
             setIsTyping(true);
             clearTimeout(typingTimeout.current);
             typingTimeout.current = setTimeout(() => {
@@ -134,14 +128,12 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
 
         socketRef.current.on("stop typing", (data) => {
             if (data=== recipientID) {
-                console.log("Stop typing event received from:", data);
                 setIsTyping(false);
                 clearTimeout(typingTimeout.current);
             }
         });
 
         socketRef.current.on("connected", () => {
-            console.log("Socket connected successfully");
         });
 
         socketRef.current.on("error", (error) => {
@@ -197,15 +189,37 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
         }, 1500); // Stop typing after 1.5 seconds of inactivity
     };
 
-
-
+    useEffect(() => {
+        async function decryptAll() {
+            const results = await Promise.all(
+                (messages || []).map(async (message) => {
+                    let decryptedContent;
+                    try {
+                        decryptedContent = await decryptMessage(
+                            message.content,
+                            message.encryptedKeys?.[currentUserID],
+                            message.iv
+                        );
+                    } catch (e) {
+                        decryptedContent = "[Failed to decrypt]";
+                    }
+                    return { ...message, decryptedContent };
+                })
+            );
+            setDecryptedMessages(results);
+        }
+        if (messages && messages.length > 0) {
+            decryptAll();
+        } else {
+            setDecryptedMessages([]);
+        }
+    }, [messages, currentUserID]);
 
     return (
         <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
             {/* Sticky Chat Header */}
             <div className="chat_header w-full p-4 bg-blue-600 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold mr-3">
-                  {/* Avatar Placeholder */}
                  <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
                 </div>
                 <div className="flex flex-col">
@@ -214,8 +228,8 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
             </div>
             {/* Scrollable Messages */}
             <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4 flex flex-col space-y-2">
-                {messages.length > 0 ? (
-                    messages.map((message) => {
+                {decryptedMessages.length > 0 ? (
+                    decryptedMessages.map((message) => {
                         let isCurrentUser = (message.sender?._id === currentUserID || message.sender === currentUserID);
                         return (
                             <div
@@ -224,8 +238,6 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                             >
                                 {!isCurrentUser && (
                                   <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm">
-                                    {/* Sender Avatar Placeholder */}
-                                  
                                     <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
                                   </div>
                                 )}
@@ -236,11 +248,10 @@ function ChatBox({userProfilePic, currentUserID, chatId }) {
                                             : "bg-white text-gray-900 rounded-bl-none"
                                     }`}
                                 >
-                                    {message.content}
+                                    {message.decryptedContent}
                                 </div>
                                 {isCurrentUser && (
                                   <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold ml-2 text-sm">
-                                    {/* User Avatar Placeholder */}
                                     <img src={userProfilePic} alt="User Profile" className="w-full h-full rounded-full" />
                                   </div>
                                 )}

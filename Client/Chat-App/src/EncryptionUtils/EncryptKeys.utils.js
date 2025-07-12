@@ -6,7 +6,7 @@
 6. Send encrypted payload
 */
 
-
+import { set } from 'idb-keyval';
 
 const generateKeyPair = async()=> {
     try {
@@ -28,33 +28,11 @@ const generateKeyPair = async()=> {
     
 }
 
-
-const storeKeyPair = async(keyPair)=> {
-    // Step 1: Open (or create) the database
-const request = indexedDB.open('MyChatAppDB', 1);
-
-request.onupgradeneeded = function (event) {
-  const db = event.target.result;
-  // Create an object store if it doesn't exist
-  db.createObjectStore('cryptoKeys');
+const storeKeyPair = async (keyPair) => {
+    const exportedPrivateKey = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+    console.log('Exported JWK to be stored in IndexedDB:', exportedPrivateKey);
+    await set('my-private-key', exportedPrivateKey);
 };
-
-request.onsuccess = function (event) {
-  const db = event.target.result;
-
-  // Step 2: Start a transaction
-  const tx = db.transaction('cryptoKeys', 'readwrite');
-  const store = tx.objectStore('cryptoKeys');
-
-  // Step 3: Store a key 
-  
-  store.put(keyPair, 'my-private-key');
-
-  tx.oncomplete = () => console.log('Key stored successfully');
-  tx.onerror = () => console.error('Transaction failed');
-};
-
-}
 
 // retrive reciepient public key 
 
@@ -114,8 +92,5 @@ const generateAESKey = async () => {
         throw error;
     }
 }
-
-
-
 
 export {generateKeyPair, storeKeyPair, generateAESKey, getRecipientPublicKey};
