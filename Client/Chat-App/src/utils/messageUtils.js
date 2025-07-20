@@ -12,7 +12,7 @@ const arrayBufferToBase64 = (buffer) => {
 };
 
 
-export const sendEncryptedIndividualMessage = async (recipientID, messageText, currentUserID, socketRef) => {
+export const sendEncryptedIndividualMessage = async (recipientID, messageText, currentUserID, socketRef, replyTo = null) => {
 
     if (!recipientID || !messageText || !currentUserID) {
         throw new Error("recipientID, messageText, and currentUserID are required");
@@ -44,6 +44,11 @@ export const sendEncryptedIndividualMessage = async (recipientID, messageText, c
             encryptedAESKeyForRecipient: arrayBufferToBase64(encryptedAESKeyForRecipient),
             encryptedAESKeyForSender: arrayBufferToBase64(encryptedAESKeyForSender),
         };
+
+        // Add replyTo if provided
+        if (replyTo) {
+            payload.replyTo = replyTo;
+        }
 
         const response = await fetch(
             `/api/v1/message/sendIndividualMessage/${recipientID}`,
@@ -80,7 +85,7 @@ export const sendEncryptedIndividualMessage = async (recipientID, messageText, c
 };
 
 
-export const sendEncryptedGroupMessage = async (chatId, messageText, currentUserID, socketRef) => {
+export const sendEncryptedGroupMessage = async (chatId, messageText, currentUserID, socketRef, replyTo = null) => {
     try {
         // 1. Generate AES key
         const aesKey = await generateAESKey();
@@ -107,6 +112,11 @@ export const sendEncryptedGroupMessage = async (chatId, messageText, currentUser
             encryptedAESKeyForRecipient: arrayBufferToBase64(encryptedAESKeyForRecipient),
             encryptedAESKeyForSender: arrayBufferToBase64(encryptedAESKeyForSender),
         };
+
+        // Add replyTo if provided
+        if (replyTo) {
+            payload.replyTo = replyTo;
+        }
 
         const response = await fetch(
             `/api/v1/message/sendGroupMessage/${chatId}`,

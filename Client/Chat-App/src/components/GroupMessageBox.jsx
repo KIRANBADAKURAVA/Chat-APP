@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
-import { FiSend } from "react-icons/fi";
+import { FiSend, FiCornerUpLeft, FiX } from "react-icons/fi";
 import { sendEncryptedGroupMessage } from '../utils/messageUtils';
+import ReplyMessage from './ReplyMessage';
 
 export default function GroupMessageBox({ chatId, currentUserID }) {
     const [messages, setMessages] = useState([]);
@@ -9,6 +10,7 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     const [chatName, setChatName] = useState("");
     const messagesEndRef = useRef(null);
     const socketRef = useRef(null);
+    const [replyTo, setReplyTo] = useState(null);
 
     const ENDPOINT = ""; // Not needed for proxy
 
@@ -111,9 +113,10 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     const sendMessage = async () => {
         if (!messageInput.trim()) return;
         try {
-            const data = await sendEncryptedGroupMessage(chatId, messageInput, currentUserID, socketRef);
-                setMessages((prevMessages) => [...prevMessages, data.data]);
-                setMessageInput("");
+            const data = await sendEncryptedGroupMessage(chatId, messageInput, currentUserID, socketRef, replyTo?._id);
+            setMessages((prevMessages) => [...prevMessages, data.data]);
+            setMessageInput("");
+            setReplyTo(null); // Clear reply after sending
         } catch (error) {
             console.error("Error sending message:", error.message);
         }
@@ -136,12 +139,22 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                         return (
                             <div
                                 key={message._id || Math.random()}
-                                className={`flex items-end ${isCurrentUser ? "justify-end" : "justify-start"}`}
+                                className={`flex items-end ${isCurrentUser ? "justify-end" : "justify-start"} group relative`}
                             >
                                 {!isCurrentUser && (
                                     <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm">
                                         {message.sender?.username ? message.sender.username[0]?.toUpperCase() : 'U'}
                                     </div>
+                                )}
+                                {/* Reply button for other user messages */}
+                                {!isCurrentUser && (
+                                    <button
+                                        onClick={() => setReplyTo(message)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 mr-1"
+                                        title="Reply to message"
+                                    >
+                                        <FiCornerUpLeft className="w-4 h-4 text-gray-500" />
+                                    </button>
                                 )}
                                 <div
                                     className={`max-w-xs px-4 py-2 rounded-2xl shadow-md text-sm break-words ${
@@ -150,8 +163,28 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                                             : "bg-white text-gray-900 rounded-bl-none"
                                     }`}
                                 >
+                                    {/* Reply to message */}
+                                    {message.replyTo && (
+                                        <ReplyMessage 
+                                            replyTo={message.replyTo}
+                                            isCurrentUser={isCurrentUser}
+                                            profilePic={message.sender?.profilePicture}
+                                            userProfilePic={null}
+                                            currentUserID={currentUserID}
+                                        />
+                                    )}
                                     {message.content}
                                 </div>
+                                {/* Reply button for self messages */}
+                                {isCurrentUser && (
+                                    <button
+                                        onClick={() => setReplyTo(message)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 ml-1"
+                                        title="Reply to message"
+                                    >
+                                        <FiCornerUpLeft className="w-4 h-4 text-gray-500" />
+                                    </button>
+                                )}
                                 {isCurrentUser && (
                                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold ml-2 text-sm">
                                         You
@@ -165,6 +198,23 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                 )}
                 <div ref={messagesEndRef} />
             </div>
+            {/* Reply Indicator */}
+            {replyTo && (
+                <div className="w-full bg-blue-50 border-t border-blue-200 px-4 py-2 flex items-center justify-between">
+                    <div className="flex items-center">
+                        <FiCornerUpLeft className="w-4 h-4 text-blue-500 mr-2" />
+                        <span className="text-sm text-blue-700">
+                            Replying to: {replyTo.content?.substring(0, 30)}...
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => setReplyTo(null)}
+                        className="p-1 hover:bg-blue-100 rounded-full"
+                    >
+                        <FiX className="w-4 h-4 text-blue-500" />
+                    </button>
+                </div>
+            )}
             {/* Sticky Input */}
             <div className="w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">
                 <input

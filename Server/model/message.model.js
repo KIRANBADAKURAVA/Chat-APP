@@ -14,7 +14,7 @@ const messageSchema = new mongoose.Schema({
     chat: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Chat',
-        required: true, // Make chat required since we rely on it
+        required: true, 
     },
     seen: {
         type: Boolean,
@@ -29,12 +29,17 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+
+    replyTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Message',
+    },
 },
 {
     timestamps: true,
 });
 
-// Add index for better query performance
+
 messageSchema.index({ chat: 1, createdAt: 1 });
 messageSchema.index({ sender: 1 });
 

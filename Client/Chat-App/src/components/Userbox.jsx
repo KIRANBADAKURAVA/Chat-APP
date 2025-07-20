@@ -4,14 +4,14 @@ export default function Userbox({ userdata }) {
   const { participants = [], isGroupChat, chatName } = userdata;
   
   
-  // For group chat, show group name; otherwise, show the other participant
+  // For group chat, show group name else show the other participant
   
   
   const displayName = isGroupChat
     ? chatName || "Group Chat"
     : participants[0]?.username || "User";
 
-    console.log("Userbox data:", participants[0].profilePicture);
+    console.log("Userbox data:", participants[0]?.profilePicture);
 
   const ENDPOINT = ""; 
 

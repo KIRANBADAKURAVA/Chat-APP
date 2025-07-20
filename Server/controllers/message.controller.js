@@ -7,7 +7,7 @@ import User from "../model/user.model.js"; // Assuming User model is defined
 
 // create a new individual message
 const AddMessage = Asynchandler(async (req, res) => {
-  const {encryptedMessage, encryptedAESKeyForRecipient, encryptedAESKeyForSender, iv} = req.body;
+  const {encryptedMessage, encryptedAESKeyForRecipient, encryptedAESKeyForSender, iv, replyTo} = req.body;
   console.log("req.body", req.body);
   try {
     const senderId = req.user._id;
@@ -55,14 +55,21 @@ const AddMessage = Asynchandler(async (req, res) => {
     encryptedKeys.set(receiverId, encryptedAESKeyForRecipient);
     encryptedKeys.set(senderId, encryptedAESKeyForSender);
 
-    // Create message
-    const newMessage = await Message.create({
+    // Create message with optional replyTo
+    const messageData = {
       chat: chat._id,
       sender: senderId,
       content,
       encryptedKeys,
       iv: iv,
-    });
+    };
+
+    // Add replyTo if provided
+    if (replyTo) {
+      messageData.replyTo = replyTo;
+    }
+
+    const newMessage = await Message.create(messageData);
 
     if (!newMessage) throw new ApiError(500, "Message not sent");
     // console.log(sender, receiverId);
@@ -81,8 +88,7 @@ const AddMessage = Asynchandler(async (req, res) => {
         recipientUser.chats.push(chat._id); 
         await recipientUser.save();
         }
-        // Removed chat.messages.push since messages array is no longer stored in Chat
-        // Messages are queried separately using the chat field
+       
 
     return res.status(201).json(
       new ApiResponse(201, {
@@ -100,23 +106,28 @@ const AddMessage = Asynchandler(async (req, res) => {
 const AddGroupMessage = Asynchandler(async (req, res) => {  
   const chatId = req.params.chatId;
   const sender = req.user._id;
-  const { content } = req.body;
+  const { content, replyTo } = req.body;
 
   const groupChat = await Chat.findById(chatId);
   if (!groupChat) throw new ApiError(404, "Group chat not found");
   groupChat.latestMessage = content;
   await groupChat.save();
   
-  const newMessage = await Message.create({
+  const messageData = {
     chat: chatId,
     sender,
     content,
-  });
+  };
+
+  // Add replyTo if provided
+  if (replyTo) {
+    messageData.replyTo = replyTo;
+  }
+
+  const newMessage = await Message.create(messageData);
 
   if (!newMessage) throw new ApiError(500, "Message not sent");
 
-  // Removed groupChat.messages.push since messages array is no longer stored in Chat
-  // Messages are queried separately using the chat field
 
   return res.status(201).json(  
     new ApiResponse(201, newMessage, "Message sent successfully")

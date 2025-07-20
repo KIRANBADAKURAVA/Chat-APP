@@ -238,7 +238,7 @@ const removeParticipant = Asynchandler(async (req, res) => {
 // get all messages in a chat
 const getAllMessages = Asynchandler(async (req, res) => {
     const {chatId} = req.params;
-    const { page = 1, limit = 50 } = req.query; // Default 50 messages per page
+    const { page = 1, limit = 50 } = req.query; 
 
     const chat = await Chat.findById(chatId);
     if(!chat) throw new ApiError(404, 'Chat not found');
@@ -250,10 +250,11 @@ const getAllMessages = Asynchandler(async (req, res) => {
     // Query messages directly from Message collection using chat field
     const messages = await Message.find({ chat: chatId })
         .populate('sender', 'username profilePicture')
-        .sort({ createdAt: -1 }) // Sort by creation time (newest first for pagination)
+        .populate('replyTo', 'content sender encryptedKeys iv') 
+        .sort({ createdAt: -1 }) 
         .skip(skip)
         .limit(parseInt(limit))
-        .lean(); // Use lean() for better performance
+        .lean();
 
     // Get total count for pagination info
     const totalMessages = await Message.countDocuments({ chat: chatId });
