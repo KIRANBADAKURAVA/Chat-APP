@@ -247,14 +247,31 @@ const getAllMessages = Asynchandler(async (req, res) => {
     // Calculate skip value for pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // Query messages directly from Message collection using chat field
     const messages = await Message.find({ chat: chatId })
-        .populate('sender', 'username profilePicture')
-        .populate('replyTo', 'content sender encryptedKeys iv') 
-        .sort({ createdAt: -1 }) 
-        .skip(skip)
-        .limit(parseInt(limit))
-        .lean();
+                                  .populate('sender', 'username profilePicture')
+                                  .populate('replyTo', 'content sender encryptedKeys iv')
+                                  .sort({ createdAt: -1 })
+                                  .skip(skip)
+                                  .limit(parseInt(limit))
+                                  .lean(); // Keeps plain JS objects
+
+        if (!messages || messages.length === 0) {
+          return res.status(200).json(new ApiResponse(200, [], 'No messages found in this chat'));
+        }
+
+        // Collect unseen message IDs
+        const unseenMessageIds = messages
+          .filter(msg => !msg.seenBy?.[req.user._id])
+          .map(msg => msg._id);
+
+        
+        if (unseenMessageIds.length > 0) {
+          await Message.updateMany(
+            { _id: { $in: unseenMessageIds } },
+            { $set: { [`seenBy.${req.user._id}`]: true } }
+          );
+}
+
 
     // Get total count for pagination info
     const totalMessages = await Message.countDocuments({ chat: chatId });

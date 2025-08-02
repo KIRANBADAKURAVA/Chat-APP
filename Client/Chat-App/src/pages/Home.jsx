@@ -11,6 +11,9 @@ function Home() {
     <div className="flex flex-col items-center justify-center h-full w-full text-center py-12 bg-gradient-to-br from-blue-50 to-white">
       <div className="flex flex-col items-center mb-8">
         <Logo width="120px" height="120px" className="mb-6" />
+        {authStatus && user && (
+          <h2 className="text-2xl font-semibold text-blue-800 mb-2">Hi {user.username}</h2>
+        )}
         <h1 className="text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 tracking-tight drop-shadow">Welcome to Chat App</h1>
         <p className="text-lg md:text-xl text-gray-600 max-w-xl mb-6">
           Connect, chat, and collaborate in real time. Start a conversation or join a group chat to experience seamless communication with a modern, fresh interface.

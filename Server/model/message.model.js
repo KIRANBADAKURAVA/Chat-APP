@@ -16,9 +16,11 @@ const messageSchema = new mongoose.Schema({
         ref: 'Chat',
         required: true, 
     },
-    seen: {
-        type: Boolean,
-        default: false,
+    seenBy : {
+        type : Map,
+        of: Boolean,
+        required: true,
+        default: new Map(),
     },
     encryptedKeys: {
         type: Map,

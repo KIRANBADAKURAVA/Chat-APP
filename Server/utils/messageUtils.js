@@ -1,11 +1,5 @@
 import Chat from "../model/chat.model.js";
 
-/**
- * Get all recipients for a message based on chat participants
- * @param {string} chatId - The chat ID
- * @param {string} senderId - The sender's ID (to exclude from recipients)
- * @returns {Promise<Array>} - Array of recipient user IDs
- */
 export const getMessageRecipients = async (chatId, senderId) => {
     try {
         const chat = await Chat.findById(chatId).populate('participants');

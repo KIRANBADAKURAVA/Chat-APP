@@ -89,6 +89,13 @@ connectDB()
                 }
             });
 
+            socket.on("UpdateSeen", (data) => {
+                console.log("Update seen status for message:", data);
+                const sender = data.sender;
+
+                io.to(socket.id).emit("message seen", data);
+            }
+            );
             socket.on("typing", (receiver) => {
                 console.log("User is typing:",  "Receiver:", users[receiver]);
                 if(users[receiver]) {
