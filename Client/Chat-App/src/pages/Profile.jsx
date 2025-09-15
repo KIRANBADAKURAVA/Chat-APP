@@ -93,14 +93,14 @@ function Profile() {
     setPasswordLoading(false);
   };
 
-  if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center h-full text-gray-600 dark:text-gray-400">Loading...</div>;
   if (error) return <div className="text-red-600 text-center mt-8">{error}</div>;
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full py-8">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-lg flex flex-col items-center">
+      <div className="bg-white dark:bg-dark-secondary rounded-2xl shadow-lg p-8 w-full max-w-lg flex flex-col items-center transition-colors duration-300">
         <div className="relative mb-4">
-          <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-4xl font-bold overflow-hidden">
+          <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-dark-tertiary flex items-center justify-center text-blue-600 dark:text-blue-400 text-4xl font-bold overflow-hidden">
             {previewPic ? (
               <img src={previewPic} alt="Profile" className="w-full h-full object-cover rounded-full" />
             ) : (
@@ -108,7 +108,7 @@ function Profile() {
             )}
           </div>
           {editMode && (
-            <label className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full cursor-pointer shadow-lg hover:bg-blue-700 transition">
+            <label className="absolute bottom-0 right-0 bg-blue-600 dark:bg-blue-500 p-2 rounded-full cursor-pointer shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition">
               <FiCamera className="text-white" size={18} />
               <input type="file" accept="image/*" className="hidden" onChange={handleProfilePicChange} />
             </label>
@@ -116,29 +116,29 @@ function Profile() {
         </div>
         <form onSubmit={handleProfileUpdate} className="w-full flex flex-col items-center">
           <div className="mb-4 w-full">
-            <label className="block text-gray-700 font-medium mb-1">Username</label>
+            <label className="block text-gray-700 dark:text-dark-text font-medium mb-1">Username</label>
             <input
               type="text"
               value={username}
               onChange={e => setUsername(e.target.value)}
               disabled={!editMode}
-              className={`w-full px-4 py-2 rounded-lg border ${editMode ? 'bg-gray-50' : 'bg-gray-100'} text-black outline-none focus:ring-2 focus:ring-blue-200 border-gray-200 transition`}
+              className={`w-full px-4 py-2 rounded-lg border ${editMode ? 'bg-gray-50 dark:bg-dark-tertiary' : 'bg-gray-100 dark:bg-dark-tertiary'} text-black dark:text-dark-text outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500 border-gray-200 dark:border-dark-border transition`}
             />
           </div>
-          {success && <div className="text-green-600 mb-2">{success}</div>}
+          {success && <div className="text-green-600 dark:text-green-400 mb-2">{success}</div>}
           {error && <div className="text-red-600 mb-2">{error}</div>}
           <div className="flex gap-4 w-full">
             {editMode ? (
               <>
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition font-semibold">
+                <button type="submit" className="flex-1 bg-blue-600 dark:bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold">
                   <FiSave /> Save
                 </button>
-                <button type="button" className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition font-semibold" onClick={() => setEditMode(false)}>
+                <button type="button" className="flex-1 bg-gray-200 dark:bg-dark-tertiary text-gray-700 dark:text-dark-text py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-dark-border transition font-semibold" onClick={() => setEditMode(false)}>
                   Cancel
                 </button>
               </>
             ) : (
-              <button type="button" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold" onClick={() => setEditMode(true)}>
+              <button type="button" className="w-full bg-blue-600 dark:bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold" onClick={() => setEditMode(true)}>
                 Edit Profile
               </button>
             )}
@@ -147,18 +147,18 @@ function Profile() {
         {/* Password Update */}
         <form onSubmit={handlePasswordUpdate} className="w-full mt-8 flex flex-col items-center">
           <div className="mb-4 w-full">
-            <label className="block text-gray-700 font-medium mb-1 flex items-center gap-2"><FiKey /> New Password</label>
+            <label className="flex text-gray-700 dark:text-dark-text font-medium mb-1 items-center gap-2"><FiKey /> New Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border bg-gray-50 text-black outline-none focus:ring-2 focus:ring-blue-200 border-gray-200 transition"
+              className="w-full px-4 py-2 rounded-lg border bg-gray-50 dark:bg-dark-tertiary text-black dark:text-dark-text outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-500 border-gray-200 dark:border-dark-border transition"
               placeholder="Enter new password"
             />
           </div>
-          {passwordSuccess && <div className="text-green-600 mb-2">{passwordSuccess}</div>}
+          {passwordSuccess && <div className="text-green-600 dark:text-green-400 mb-2">{passwordSuccess}</div>}
           {passwordError && <div className="text-red-600 mb-2">{passwordError}</div>}
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2" disabled={passwordLoading}>
+          <button type="submit" className="w-full bg-blue-600 dark:bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold flex items-center justify-center gap-2" disabled={passwordLoading}>
             <FiSave /> {passwordLoading ? 'Saving...' : 'Update Password'}
           </button>
         </form>

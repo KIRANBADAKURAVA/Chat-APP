@@ -301,10 +301,10 @@ function ChatBox({ userProfilePic, currentUserID, chatId }) {
   };
 
   return (
-    <div className="chat_box w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
+    <div className="chat_box w-full h-full flex flex-col bg-gray-50 dark:bg-dark-primary rounded-lg shadow-lg transition-colors duration-300">
       {/* Sticky Chat Header */}
-      <div className="chat_header w-full p-4 bg-blue-600 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md">
-        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold mr-3">
+      <div className="chat_header w-full p-4 bg-blue-600 dark:bg-blue-500 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md transition-colors duration-300">
+        <div className="w-10 h-10 rounded-full bg-white dark:bg-dark-secondary flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold mr-3">
           <img src={profilePic} alt="Profile" className="w-full h-full rounded-full" />
         </div>
         <div className="flex flex-col">
@@ -313,7 +313,7 @@ function ChatBox({ userProfilePic, currentUserID, chatId }) {
       </div>
 
       {/* Messages Display Area */}
-      <div className="message_display_area w-full flex-grow bg-gray-100 overflow-y-auto p-4 flex flex-col space-y-2">
+      <div className="message_display_area w-full flex-grow bg-gray-100 dark:bg-dark-secondary overflow-y-auto p-4 flex flex-col space-y-2 transition-colors duration-300">
         {decryptedMessages.length > 0 ? (
           decryptedMessages.map((message) => (
             <div
@@ -332,50 +332,50 @@ function ChatBox({ userProfilePic, currentUserID, chatId }) {
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-400">No messages available</p>
+          <p className="text-center text-gray-400 dark:text-gray-500">No messages available</p>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Typing Indicator */}
       {isTyping && (
-        <div className="flex items-center px-6 py-2 text-blue-500 text-sm font-medium mb-1" style={{ minHeight: '28px' }}>
+        <div className="flex items-center px-6 py-2 text-blue-500 dark:text-blue-400 text-sm font-medium mb-1" style={{ minHeight: '28px' }}>
           <span className="mr-2">{recipientName || "Someone"} typing...</span>
           <span className="flex space-x-1">
-            <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-            <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-            <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            <span className="w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+            <span className="w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+            <span className="w-2 h-2 bg-blue-400 dark:bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
           </span>
         </div>
       )}
 
       {/* Reply Indicator */}
       {replyTo && (
-        <div className="w-full bg-blue-50 border-t border-blue-200 px-4 py-2 flex items-center justify-between">
+        <div className="w-full bg-blue-50 dark:bg-dark-tertiary border-t border-blue-200 dark:border-dark-border px-4 py-2 flex items-center justify-between transition-colors duration-300">
           <div className="flex items-center">
-            <FiCornerUpLeft className="w-4 h-4 text-blue-500 mr-2" />
-            <span className="text-sm text-blue-700">
+            <FiCornerUpLeft className="w-4 h-4 text-blue-500 dark:text-blue-400 mr-2" />
+            <span className="text-sm text-blue-700 dark:text-blue-400">
               Replying to: {(replyTo.decryptedContent || replyTo.content)?.substring(0, 30)}...
             </span>
           </div>
-          <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-blue-100 rounded-full">
-            <FiX className="w-4 h-4 text-blue-500" />
+          <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-blue-100 dark:hover:bg-dark-secondary rounded-full">
+            <FiX className="w-4 h-4 text-blue-500 dark:text-blue-400" />
           </button>
         </div>
       )}
 
       {/* Message Input */}
-      <div className="message_input_box w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">
+      <div className="message_input_box w-full h-16 flex items-center bg-white dark:bg-dark-secondary border-t border-gray-200 dark:border-dark-border px-4 sticky bottom-0 z-10 transition-colors duration-300">
         <input
           type="text"
           value={messageInput}
           onChange={handleInputChange}
-          className="flex-grow h-10 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring focus:ring-blue-400"
+          className="flex-grow h-10 px-4 bg-gray-100 dark:bg-dark-tertiary text-gray-900 dark:text-dark-text rounded-full focus:outline-none focus:ring focus:ring-blue-400 dark:focus:ring-blue-500 transition-colors duration-300"
           placeholder="Type a message..."
           onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
         />
         <button
-          className="ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
+          className="ml-4 p-3 text-2xl bg-blue-500 dark:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 transition"
           onClick={sendMessage}
         >
           <FiSend />

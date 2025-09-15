@@ -92,16 +92,16 @@ export default function Chats() {
   return (
     <div className="flex w-full h-full bg-transparent rounded-2xl shadow-lg overflow-hidden md:mt-2 md:mb-2 md:ml-0 md:mr-0">
       {/* Left Panel: Chat List */}
-      <div className="hidden md:flex flex-col flex-[3] max-w-xs bg-white h-full border-r border-gray-200 relative">
+      <div className="hidden md:flex flex-col flex-[3] max-w-xs bg-white dark:bg-dark-secondary h-full border-r border-gray-200 dark:border-dark-border relative transition-colors duration-300">
         {/* Search Bar */}
-        <div className="sticky top-0 z-10 bg-white p-4 border-b border-gray-100">
-          <div className="flex items-center bg-gray-100 rounded-full px-3 py-2 shadow-sm">
-            <FiSearch className="text-gray-500 text-lg mr-2" />
+        <div className="sticky top-0 z-10 bg-white dark:bg-dark-secondary p-4 border-b border-gray-100 dark:border-dark-border transition-colors duration-300">
+          <div className="flex items-center bg-gray-100 dark:bg-dark-tertiary rounded-full px-3 py-2 shadow-sm">
+            <FiSearch className="text-gray-500 dark:text-gray-400 text-lg mr-2" />
             <input
               type="text"
               placeholder="Search chats..."
               onChange={(e) => handleSearch(e.target.value)}
-              className="bg-transparent outline-none text-gray-700 text-sm w-full"
+              className="bg-transparent outline-none text-gray-700 dark:text-dark-text text-sm w-full"
             />
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function Chats() {
         ) : (
           <button
             onClick={() => setGroupbox(true)}
-            className="absolute bottom-6 right-6 h-12 w-12 flex items-center justify-center bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
+            className="absolute bottom-6 right-6 h-12 w-12 flex items-center justify-center bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition"
             title="Create Group Chat"
           >
             <BsChatRightText size={24} />
@@ -125,20 +125,20 @@ export default function Chats() {
             filteredChats.map((chatItem) => (
               <button
                 key={chatItem._id}
-                className="w-full text-left p-2 rounded-lg hover:bg-blue-50 transition flex items-center"
+                className="w-full text-left p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-dark-tertiary transition flex items-center"
                 onClick={() => handleChatClick(chatItem)}
               >
                 <Userbox userdata={chatItem} />
               </button>
             ))
           ) : (
-            <p className="text-center text-gray-400 mt-8">No chats available</p>
+            <p className="text-center text-gray-400 dark:text-gray-500 mt-8">No chats available</p>
           )}
         </div>
       </div>
 
       {/* Right Panel: Chat Area */}
-      <div className="flex-1 flex flex-col h-full bg-gray-50">
+      <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-dark-primary transition-colors duration-300">
         {/* Mobile Chat List Toggle (optional for future) */}
         {/* Chat Area */}
         <div className="flex-1 flex flex-col h-full">

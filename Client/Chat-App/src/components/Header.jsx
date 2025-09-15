@@ -87,7 +87,7 @@ const Header = () => {
   };
 
   return (
-    <nav className="flex flex-col h-full w-full items-center justify-between bg-white shadow-none border-none">
+    <nav className="flex flex-col h-full w-full items-center justify-between bg-white dark:bg-dark-secondary shadow-none border-none transition-colors duration-300">
       {/* Logo at the top */}
       <div className="mt-8 mb-8">
         <Link to="/">
@@ -115,14 +115,14 @@ const Header = () => {
                   className={`flex flex-col md:flex-row items-center md:justify-start w-12 md:w-36 py-3 md:px-4 rounded-xl transition-all duration-300 group relative overflow-hidden
                     ${location.pathname === item.path 
                       ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105" 
-                      : "hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 text-gray-700 hover:text-blue-700 hover:shadow-md"
+                      : "hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 dark:hover:from-dark-tertiary dark:hover:to-dark-tertiary text-gray-700 dark:text-dark-text hover:text-blue-700 dark:hover:text-blue-400 hover:shadow-md"
                     }`}
                   title={item.name}
                 >
-                  <span className={`text-xl mb-2 md:mb-0 group-hover:scale-110 transition-transform duration-200 ${location.pathname === item.path ? 'text-white' : 'group-hover:text-blue-600'}`}>
+                  <span className={`text-xl mb-2 md:mb-0 group-hover:scale-110 transition-transform duration-200 ${location.pathname === item.path ? 'text-white' : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
                     {item.icon}
                   </span>
-                  <span className={`hidden md:inline ml-3 text-sm font-semibold group-hover:text-blue-600 transition-colors duration-200 ${location.pathname === item.path ? 'text-white' : ''}`}>
+                  <span className={`hidden md:inline ml-3 text-sm font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 ${location.pathname === item.path ? 'text-white' : ''}`}>
                     {item.name}
                   </span>
                   {/* Active indicator */}
@@ -139,7 +139,7 @@ const Header = () => {
       {authStatus && (
         <div className="mb-8 flex flex-col items-center">
           <div className="text-center mb-4">
-            <span className="text-gray-800 font-semibold text-sm">{username}</span>
+            <span className="text-gray-800 dark:text-dark-text font-semibold text-sm">{username}</span>
           </div>
           <button
             onClick={logoutfn}

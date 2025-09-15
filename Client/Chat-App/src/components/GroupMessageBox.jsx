@@ -123,16 +123,16 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-gray-50 rounded-lg shadow-lg">
+        <div className="w-full h-full flex flex-col bg-gray-50 dark:bg-dark-primary rounded-lg shadow-lg transition-colors duration-300">
             {/* Sticky Group Chat Header */}
-            <div className="w-full p-4 bg-blue-600 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold mr-3">
+            <div className="w-full p-4 bg-blue-600 dark:bg-blue-500 text-white flex items-center rounded-t-lg sticky top-0 z-10 shadow-md transition-colors duration-300">
+                <div className="w-10 h-10 rounded-full bg-white dark:bg-dark-secondary flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold mr-3">
                     {chatName ? chatName[0]?.toUpperCase() : 'G'}
                 </div>
                 <h2 className="text-lg font-semibold truncate">{chatName || "Group Chat"}</h2>
             </div>
             {/* Scrollable Messages */}
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-2 bg-gray-100">
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col space-y-2 bg-gray-100 dark:bg-dark-secondary transition-colors duration-300">
                 {messages.length > 0 ? (
                     messages.map((message) => {
                         const isCurrentUser = message.sender?._id === currentUserID || message.sender === currentUserID;
@@ -142,7 +142,7 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                                 className={`flex items-end ${isCurrentUser ? "justify-end" : "justify-start"} group relative`}
                             >
                                 {!isCurrentUser && (
-                                    <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-2 text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-blue-200 dark:bg-dark-tertiary flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold mr-2 text-sm">
                                         {message.sender?.username ? message.sender.username[0]?.toUpperCase() : 'U'}
                                     </div>
                                 )}
@@ -150,17 +150,17 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                                 {!isCurrentUser && (
                                     <button
                                         onClick={() => setReplyTo(message)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 mr-1"
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-dark-tertiary mr-1"
                                         title="Reply to message"
                                     >
-                                        <FiCornerUpLeft className="w-4 h-4 text-gray-500" />
+                                        <FiCornerUpLeft className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                     </button>
                                 )}
                                 <div
                                     className={`max-w-xs px-4 py-2 rounded-2xl shadow-md text-sm break-words ${
                                         isCurrentUser
-                                            ? "bg-blue-500 text-white rounded-br-none"
-                                            : "bg-white text-gray-900 rounded-bl-none"
+                                            ? "bg-blue-500 dark:bg-blue-600 text-white rounded-br-none"
+                                            : "bg-white dark:bg-dark-secondary text-gray-900 dark:text-dark-text rounded-bl-none"
                                     }`}
                                 >
                                     {/* Reply to message */}
@@ -179,14 +179,14 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                                 {isCurrentUser && (
                                     <button
                                         onClick={() => setReplyTo(message)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 ml-1"
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-dark-tertiary ml-1"
                                         title="Reply to message"
                                     >
-                                        <FiCornerUpLeft className="w-4 h-4 text-gray-500" />
+                                        <FiCornerUpLeft className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                     </button>
                                 )}
                                 {isCurrentUser && (
-                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-700 font-bold ml-2 text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-dark-tertiary flex items-center justify-center text-gray-700 dark:text-gray-300 font-bold ml-2 text-sm">
                                         You
                                     </div>
                                 )}
@@ -194,39 +194,39 @@ export default function GroupMessageBox({ chatId, currentUserID }) {
                         );
                     })
                 ) : (
-                    <p className="text-center text-gray-400">No messages available</p>
+                    <p className="text-center text-gray-400 dark:text-gray-500">No messages available</p>
                 )}
                 <div ref={messagesEndRef} />
             </div>
             {/* Reply Indicator */}
             {replyTo && (
-                <div className="w-full bg-blue-50 border-t border-blue-200 px-4 py-2 flex items-center justify-between">
+                <div className="w-full bg-blue-50 dark:bg-dark-tertiary border-t border-blue-200 dark:border-dark-border px-4 py-2 flex items-center justify-between transition-colors duration-300">
                     <div className="flex items-center">
-                        <FiCornerUpLeft className="w-4 h-4 text-blue-500 mr-2" />
-                        <span className="text-sm text-blue-700">
+                        <FiCornerUpLeft className="w-4 h-4 text-blue-500 dark:text-blue-400 mr-2" />
+                        <span className="text-sm text-blue-700 dark:text-blue-400">
                             Replying to: {replyTo.content?.substring(0, 30)}...
                         </span>
                     </div>
                     <button
                         onClick={() => setReplyTo(null)}
-                        className="p-1 hover:bg-blue-100 rounded-full"
+                        className="p-1 hover:bg-blue-100 dark:hover:bg-dark-secondary rounded-full"
                     >
-                        <FiX className="w-4 h-4 text-blue-500" />
+                        <FiX className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                     </button>
                 </div>
             )}
             {/* Sticky Input */}
-            <div className="w-full h-16 flex items-center bg-white border-t border-gray-200 px-4 sticky bottom-0 z-10">
+            <div className="w-full h-16 flex items-center bg-white dark:bg-dark-secondary border-t border-gray-200 dark:border-dark-border px-4 sticky bottom-0 z-10 transition-colors duration-300">
                 <input
                     type="text"
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
-                    className="flex-grow h-10 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring focus:ring-blue-400"
+                    className="flex-grow h-10 px-4 bg-gray-100 dark:bg-dark-tertiary text-gray-900 dark:text-dark-text rounded-full focus:outline-none focus:ring focus:ring-blue-400 dark:focus:ring-blue-500 transition-colors duration-300"
                     placeholder="Type a message..."
                     onKeyDown={e => { if (e.key === 'Enter') sendMessage(); }}
                 />
                 <button
-                    className="ml-4 p-3 text-2xl bg-blue-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition"
+                    className="ml-4 p-3 text-2xl bg-blue-500 dark:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 dark:hover:bg-blue-700 transition"
                     onClick={sendMessage}
                 >
                     <FiSend />

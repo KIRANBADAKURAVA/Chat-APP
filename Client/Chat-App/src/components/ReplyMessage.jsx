@@ -39,15 +39,15 @@ const ReplyMessage = ({ replyTo, isCurrentUser, profilePic, userProfilePic, curr
         <div className={`flex items-center mb-1 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex items-center max-w-xs ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
                 {/* Reply icon */}
-                <div className={`flex items-center text-xs text-gray-500 ${isCurrentUser ? 'ml-1' : 'mr-1'}`}>
+                <div className={`flex items-center text-xs text-gray-500 dark:text-gray-400 ${isCurrentUser ? 'ml-1' : 'mr-1'}`}>
                     <FiCornerUpLeft className="w-3 h-3" />
                 </div>
                 
                 {/* Reply content */}
                 <div className={`max-w-32 px-2 py-1 rounded-lg text-xs break-words ${
                     isCurrentUser 
-                        ? 'bg-blue-400 text-white' 
-                        : 'bg-gray-200 text-gray-700'
+                        ? 'bg-blue-400 dark:bg-blue-500 text-white' 
+                        : 'bg-gray-200 dark:bg-dark-tertiary text-gray-700 dark:text-dark-text'
                 }`}>
                     <div className="truncate">
                         {decryptedContent}

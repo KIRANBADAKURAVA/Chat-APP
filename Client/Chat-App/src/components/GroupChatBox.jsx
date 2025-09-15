@@ -18,19 +18,19 @@ function GroupChatBox({ userdata, members, setMembers }) {
   };
 
   return (
-    <div className="flex items-center justify-between bg-gray-100 hover:bg-gray-400 p-4 m-1 rounded-lg shadow-sm w-1/2">
+    <div className="flex items-center justify-between bg-gray-100 dark:bg-dark-tertiary hover:bg-gray-400 dark:hover:bg-dark-border p-4 m-1 rounded-lg shadow-sm w-1/2 transition-colors duration-300">
       <div className="flex items-center">
         <div className="flex items-center justify-center text-white font-bold text-xl w-12 h-12 rounded-md">
           <img src={userdata.profilePicture || '/fallback-image.png'} alt="profile" className="w-12 h-12 rounded-full" />
         </div>
-        <div className="ml-2 text-black text-lg font-semibold">{userdata.username}</div>
+        <div className="ml-2 text-black dark:text-dark-text text-lg font-semibold">{userdata.username}</div>
       </div>
       <div>
         <input
           type="checkbox"
           checked={checked}
           onChange={handleCheckboxChange}
-          className="h-6 w-6"
+          className="h-6 w-6 accent-blue-500 dark:accent-blue-400"
         />
       </div>
     </div>
