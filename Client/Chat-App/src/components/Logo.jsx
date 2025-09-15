@@ -1,5 +1,6 @@
 import React from 'react';
-import logoImage from '../assets/Chat-App-logo-nobg.png';
+
+import logoImage from "../assets/Chat-APP-logo-nobg.png";
 
 function Logo({ width = '120px', height = 'auto', className = '' }) {
   return (

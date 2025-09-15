@@ -3,8 +3,8 @@ import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { login as authLogin } from "../store/authSilce";
-import { FiLock } from "react-icons/fi";
-import logoImage from "../assets/Chat-App-logo-nobg.png";
+
+import logoImage from "../assets/Chat-APP-logo-nobg.png";
 
 function Login() {
   const dispatch = useDispatch();

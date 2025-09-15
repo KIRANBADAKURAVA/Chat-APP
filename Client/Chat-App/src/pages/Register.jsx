@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import logoImage from '../assets/Chat-App-logo-nobg.png';
+import logoImage from '../assets/Chat-APP-logo-nobg.png';
 import { generateKeyPair, storeKeyPair } from '../EncryptionUtils/EncryptKeys.utils';
 
 
