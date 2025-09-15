@@ -7,7 +7,7 @@ import { BsChatSquare } from "react-icons/bs";
 import { FaUsers } from "react-icons/fa";
 import { logout } from "../store/authSilce";
 import { useDispatch } from "react-redux";
-import logoImage from "../../src/assets/Chat-App-logo-nobg.png";
+import logoImage from "../assets/Chat-APP-logo-nobg.png";
 import { io } from "socket.io-client";
 
 const navIconSize = 24;
