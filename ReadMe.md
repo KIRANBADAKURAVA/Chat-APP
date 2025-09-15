@@ -3,6 +3,8 @@
 This project is a base for any chat application, featuring end-to-end encryption and real-time collaboration.
 
 🔗 **Live Demo: ** [https://chat-app-k55q.vercel.app/](https://chat-app-k55q.vercel.app/)
+Username- KIRANBADAKURAVA
+Password- KIRANBADAKURAVA
 ## Encryption Approach
 
 Messages are encrypted on the client side using asymmetric cryptography (e.g., RSA or ECC) before being sent to the server. Each user has a unique public/private key pair. When sending a message, the sender encrypts it with the recipient's public key, ensuring only the intended recipient can decrypt it with their private key. This guarantees end-to-end encryption, so even the server cannot read message contents.
