@@ -7,11 +7,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://chat-app-5-hqwv.onrender.com',
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'ws://localhost:5000',
+        target: 'wss://chat-app-5-hqwv.onrender.com',
         ws: true,
       },
     },

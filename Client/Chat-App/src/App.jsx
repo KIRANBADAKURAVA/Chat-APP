@@ -1,7 +1,6 @@
 import { Header } from './index.jsx';
 import { Outlet } from 'react-router-dom';
 import './index.css';
-import logoImage from './assets/Chat-App-logo-nobg.png';
 import ThemeToggle from './components/ThemeToggle.jsx';
 
 function App() {
