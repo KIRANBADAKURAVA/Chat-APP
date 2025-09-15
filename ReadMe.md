@@ -12,10 +12,17 @@ The application uses WebSockets to enable real-time, bidirectional communication
 
 ## Database Design & Scalability
 
-The database is designed with scalability in mind, using a schema that separates users, conversations, and messages:
+The database is designed with scalability and efficiency in mind, using a schema that separates users, conversations, and messages:
 
 - **Users Table:** Stores user profiles and public keys.
 - **Conversations Table:** Tracks chat rooms or direct message threads.
 - **Messages Table:** Stores encrypted messages, timestamps, sender, and conversation references.
 
-Indexes are used on frequently queried fields (e.g., user IDs, conversation IDs) to optimize performance. For horizontal scaling, the database can be sharded by user or conversation ID, and message storage can be distributed across multiple nodes. This design supports high throughput and large user bases.
+To ensure optimal performance and reliability:
+- **No Memory Limits:** The system uses persistent storage and supports horizontal scaling, so there are no practical memory limits for storing messages or user data.
+- **Data Redundancy:** Data replication strategies are implemented to prevent data loss and ensure high availability.
+- **Query Optimization:** Indexes are created on frequently queried fields (e.g., user IDs, conversation IDs) to speed up lookups and message retrieval.
+- **Sharding:** For horizontal scaling, the database can be sharded by user or conversation ID, distributing data across multiple nodes.
+- **Minimal Data Redundancy:** The schema is normalized to avoid unnecessary duplication of data, reducing storage requirements and maintaining data integrity.
+
+This design supports high throughput, large user bases, and reliable, real-time chat experiences.
